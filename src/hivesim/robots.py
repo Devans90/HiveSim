@@ -94,6 +94,7 @@ class BaseBot(ABC):
                     
                 piece = game_state.all_pieces.get(pid)
                 valid_targets = []
+                
                 for space in available_spaces:
                     try:
                         test_turn = Turn(
