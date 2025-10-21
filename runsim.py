@@ -1,7 +1,7 @@
 import time
-from src.game import Game, GameState
-from src.visualization import visualize_game_board
-from src.robots import RandomBot
+from game import Game, GameState
+from visualization import visualize_game_board
+from robots import RandomBot
 
 def simulate_game(white_bot, black_bot, verbose=False, plot_game: bool = False):
     """Simulate a game between two bots."""
