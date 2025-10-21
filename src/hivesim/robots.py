@@ -152,6 +152,52 @@ class BaseBot(ABC):
                     pass  # Invalid space, skip it
             
             if not valid_spaces:
+                # Can't place this piece type, try to move instead
+                if movable_pieces:
+                    valid_moves = {}
+                    
+                    for piece_type_to_try in movable_pieces.keys():
+                        candidate_pieces = movable_pieces.get(piece_type_to_try, [])
+
+                        for pid in candidate_pieces:
+                            if not Turn.hive_stays_connected(pid, game_state):
+                                continue
+                                
+                            piece = game_state.all_pieces.get(pid)
+                            valid_targets = []
+                            
+                            for space in available_spaces:
+                                try:
+                                    test_turn = Turn(
+                                        player=self.team,
+                                        piece_id=pid,
+                                        action_type='move',
+                                        target_coordinates=space
+                                    )
+                                    Turn.validate_movement(test_turn, game_state)
+                                    valid_targets.append(space)
+                                except ValueError:
+                                    continue
+                            if valid_targets:
+                                valid_moves[pid] = valid_targets
+                    
+                    if valid_moves:
+                        # Found valid moves, use those instead
+                        pieces_with_moves = list(valid_moves.keys())
+                        piece_id = self.choose_piece_id(pieces_with_moves, 
+                                                    'any', 'move', game_state)
+                        
+                        target = self.choose_target_location(valid_moves[piece_id], 'any', 
+                                                            'move', game_state)
+
+                        return Turn(
+                            player=self.team,
+                            piece_id=piece_id,
+                            action_type='move',
+                            target_coordinates=target
+                        )
+                
+                # No valid placements and no valid moves
                 if game_state.verbose:
                     print(f"No valid placement spaces for {piece_type}")
                     print(f"Available spaces checked: {len(available_spaces)}")
