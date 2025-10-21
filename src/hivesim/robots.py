@@ -85,6 +85,8 @@ class BaseBot(ABC):
         
         if action_type == 'move':
             # Try all movable piece types to find valid moves
+            # This ensures we don't forfeit just because the randomly chosen piece_type
+            # can't move, when other piece types might have valid moves
             valid_moves = {}
             
             for piece_type_to_try in movable_pieces.keys():
@@ -153,6 +155,7 @@ class BaseBot(ABC):
             
             if not valid_spaces:
                 # Can't place this piece type, try to move instead
+                # This prevents forfeiting when placement fails but moves are still possible
                 if movable_pieces:
                     valid_moves = {}
                     
