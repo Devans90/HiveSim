@@ -84,34 +84,36 @@ class BaseBot(ABC):
         available_spaces = game_state.get_available_spaces()
         
         if action_type == 'move':
-            # Filter for pieces that won't break the hive
-            candidate_pieces = movable_pieces.get(piece_type, [])
+            # Try all movable piece types to find valid moves
             valid_moves = {}
+            
+            for piece_type_to_try in movable_pieces.keys():
+                candidate_pieces = movable_pieces.get(piece_type_to_try, [])
 
-            for pid in candidate_pieces:
-                if not Turn.hive_stays_connected(pid, game_state):
-                    continue
-                    
-                piece = game_state.all_pieces.get(pid)
-                valid_targets = []
-                
-                for space in available_spaces:
-                    try:
-                        test_turn = Turn(
-                            player=self.team,
-                            piece_id=pid,
-                            action_type='move',
-                            target_coordinates=space
-                        )
-                        Turn.validate_movement(test_turn, game_state)
-                        valid_targets.append(space)
-                    except ValueError:
+                for pid in candidate_pieces:
+                    if not Turn.hive_stays_connected(pid, game_state):
                         continue
-                if valid_targets:
-                    valid_moves[pid] = valid_targets
+                        
+                    piece = game_state.all_pieces.get(pid)
+                    valid_targets = []
+                    
+                    for space in available_spaces:
+                        try:
+                            test_turn = Turn(
+                                player=self.team,
+                                piece_id=pid,
+                                action_type='move',
+                                target_coordinates=space
+                            )
+                            Turn.validate_movement(test_turn, game_state)
+                            valid_targets.append(space)
+                        except ValueError:
+                            continue
+                    if valid_targets:
+                        valid_moves[pid] = valid_targets
 
             if not valid_moves:
-                # Fall back to placement
+                # No valid moves found for any piece type, fall back to placement
                 action_type = 'place'
                 if available_pieces:
                     piece_type = self.choose_piece_type(available_pieces, {}, 
@@ -119,11 +121,12 @@ class BaseBot(ABC):
                 else:
                     return Turn(player=self.team, action_type='forfeit')
             else:
+                # Choose from all pieces that have valid moves
                 pieces_with_moves = list(valid_moves.keys())
                 piece_id = self.choose_piece_id(pieces_with_moves, 
-                                            piece_type, action_type, game_state)
+                                            'any', action_type, game_state)
                 
-                target = self.choose_target_location(valid_moves[piece_id], piece_type, 
+                target = self.choose_target_location(valid_moves[piece_id], 'any', 
                                                     action_type, game_state)
 
                 return Turn(
