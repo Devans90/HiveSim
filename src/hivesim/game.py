@@ -486,6 +486,15 @@ class Turn(BaseModel):
         if turn.piece_id is None:
             raise ValueError('Movement requires piece_id to specify which piece to move')
         
+        # if the queen is not placed by turn 4, no moves allowed
+        queen = game_state.get_queen(turn.player)
+        if turn.player == 'white':
+            player_turn_number = game_state.turn // 2
+        else:
+            player_turn_number = (game_state.turn - 1) // 2
+        if player_turn_number >= 4 and queen.location == 'offboard':
+            raise ValueError(f'{turn.player.capitalize()}\'s Queen has not been placed by turn 4, cannot move pieces')
+
         piece = game_state.all_pieces.get(turn.piece_id)
         if piece is None: # wrong id
             raise ValueError('Piece not found')
