@@ -816,7 +816,6 @@ class Game(BaseModel):
             
             # actually move the piece
             piece = self.game_state.all_pieces.get(turn.piece_id)
-            piece.hex_coordinates = turn.target_coordinates
             self.game_state.board_state.move_piece(turn.piece_id, piece, turn.target_coordinates)
 
         elif turn.action_type == 'forfeit':
