@@ -39,6 +39,62 @@ class TestBoardState:
         board.move_piece(ant.piece_id, ant, end)
         
         assert ant.hex_coordinates == end
+    
+    def test_move_piece_to_occupied_space(self):
+        """Test moving a piece onto another piece (stacking)."""
+        board = BoardState()
+        ant1 = Ant(team='white')
+        ant2 = Ant(team='black')
+        start1 = HexCoordinate(q=0, r=0, s=0)
+        start2 = HexCoordinate(q=1, r=-1, s=0)
+        
+        # Add both pieces
+        board.add_piece(ant1.piece_id, ant1, start1)
+        board.add_piece(ant2.piece_id, ant2, start2)
+        
+        # Verify initial state
+        assert (0, 0, 0) in board.stacks
+        assert (1, -1, 0) in board.stacks
+        assert len(board.stacks[(0, 0, 0)]) == 1
+        assert len(board.stacks[(1, -1, 0)]) == 1
+        
+        # Move ant2 onto ant1 (stacking)
+        board.move_piece(ant2.piece_id, ant2, start1)
+        
+        # Verify ant2 moved to ant1's location
+        assert ant2.hex_coordinates == start1
+        assert ant2.z_level == 1
+        assert (0, 0, 0) in board.stacks
+        assert len(board.stacks[(0, 0, 0)]) == 2
+        assert board.stacks[(0, 0, 0)][0] == ant1.piece_id
+        assert board.stacks[(0, 0, 0)][1] == ant2.piece_id
+        
+        # Verify old location is now empty
+        assert (1, -1, 0) not in board.stacks
+    
+    def test_move_piece_removes_from_old_stack(self):
+        """Test that moving a piece properly removes it from the old stack."""
+        board = BoardState()
+        ant = Ant(team='white')
+        start = HexCoordinate(q=0, r=0, s=0)
+        end = HexCoordinate(q=1, r=-1, s=0)
+        
+        # Add piece at start location
+        board.add_piece(ant.piece_id, ant, start)
+        
+        # Verify piece is in the old stack
+        assert (0, 0, 0) in board.stacks
+        assert ant.piece_id in board.stacks[(0, 0, 0)]
+        
+        # Move the piece
+        board.move_piece(ant.piece_id, ant, end)
+        
+        # Verify piece is removed from old stack
+        assert (0, 0, 0) not in board.stacks
+        
+        # Verify piece is in new stack
+        assert (1, -1, 0) in board.stacks
+        assert ant.piece_id in board.stacks[(1, -1, 0)]
 
 
 class TestGameState:
