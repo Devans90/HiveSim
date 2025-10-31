@@ -2,13 +2,19 @@ import time
 from game import Game, GameState
 from robots import RandomBot
 from visualization import visualize_game_board
+from Gamelogging import GameLogger
 
-
-def simulate_game(white_bot, black_bot, verbose=False, plot_game: bool = False, live_delay: float = 0.5):
+def simulate_game(white_bot, black_bot, verbose=False, plot_game: bool = False, live_delay: float = 0.5, enable_logging: bool = False):
     """Simulate a game between two bots with optional live visualization."""
+
+    logger = GameLogger() if enable_logging else None
+    if logger:
+        logger.start_game(white_bot.name, black_bot.name)
 
     game = Game(game_state=GameState(verbose=verbose))
     max_turns = 200  # Prevent infinite games
+    winner = None
+    end_reason = "normal"
 
     for turn_num in range(max_turns):
         # Check for loss by queen placement rule
@@ -17,6 +23,10 @@ def simulate_game(white_bot, black_bot, verbose=False, plot_game: bool = False, 
             if verbose:
                 print(f"\n{game.game_state.current_team.upper()} cannot place queen by turn 4!")
                 print(f"{queen_loss.upper()} WINS by queen placement rule!")
+            end_reason = "queen_surrounded"
+            if logger:
+                logger.log_game_end(queen_loss, turn_num, end_reason)
+                logger.save_current_game()
             return queen_loss, turn_num, game
 
         current_bot = white_bot if game.game_state.current_team == "white" else black_bot
@@ -38,10 +48,21 @@ def simulate_game(white_bot, black_bot, verbose=False, plot_game: bool = False, 
 
         # Apply the turn
         try:
+            if logger:
+                logger.log_turn(turn_num, turn, game.game_state, current_bot.name)
             game.apply_turn(turn)
         except Exception as e:
-            print(f"Error applying turn: {e}")
-            break
+            error = str(e)
+            if verbose:
+                print(f"Error applying turn: {e}")
+            if logger:
+                logger.log_turn(turn_num, turn, game.game_state, current_bot.name, error=error)
+            end_reason = "error"
+            winner = "black" if current_bot.team == "white" else "white"
+            if logger:
+                logger.log_game_end(winner, turn_num, end_reason)
+                logger.save_current_game()
+            return winner, turn_num, game
 
         # Live visualization
         if plot_game:
@@ -56,10 +77,17 @@ def simulate_game(white_bot, black_bot, verbose=False, plot_game: bool = False, 
         if winner:
             if verbose:
                 print(f"\n{winner.upper()} WINS after {turn_num + 1} turns!")
+            if logger:
+                logger.log_game_end(winner, turn_num + 1, end_reason)
+                logger.save_current_game()
             return winner, turn_num + 1, game
 
     if verbose:
         print(f"\nGame reached maximum turns ({max_turns})")
+    end_reason = "max_turns_reached"
+    if logger:
+        logger.log_game_end(None, max_turns, end_reason)
+        logger.save_current_game()  
 
     return None, max_turns, game
 

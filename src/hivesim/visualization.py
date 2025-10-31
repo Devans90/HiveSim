@@ -15,7 +15,8 @@ def get_hexagon_vertices(x: float, y: float, size: float = 1.0):
     angles = np.linspace(0, 2*np.pi, 7)
     return x + size * np.cos(angles), y + size * np.sin(angles)
 
-def visualize_game_board(board_state: BoardState, show_empty_hexes: Optional[List[HexCoordinate]] = None, show_coordinates: bool = True, delay: float = 0.5):
+def visualize_game_board(board_state: BoardState, show_empty_hexes: Optional[List[HexCoordinate]] = None, 
+                        show_coordinates: bool = True, delay: float = 0.5, turn_number: int = 0):
     """Render and refresh a persistent game board in the browser."""
     fig = go.Figure()
     hex_size = 0.95
@@ -34,47 +35,99 @@ def visualize_game_board(board_state: BoardState, show_empty_hexes: Optional[Lis
                                      mode='lines', showlegend=False,
                                      hovertemplate=f'Empty<br>{coord}<extra></extra>'))
 
-    # Draw pieces
-    for piece in board_state.pieces.values():
-        if not piece.hex_coordinates or piece.location == 'offboard':
+    # Group pieces by their base coordinates to handle stacks
+    coord_to_pieces = {}
+    for piece_id, piece in board_state.pieces.items():
+        if not piece.hex_coordinates or piece.location != 'board':
             continue
-        coord = piece.hex_coordinates
+        coord_tuple = (piece.hex_coordinates.q, piece.hex_coordinates.r, piece.hex_coordinates.s)
+        if coord_tuple not in coord_to_pieces:
+            coord_to_pieces[coord_tuple] = []
+        coord_to_pieces[coord_tuple].append((piece.z_level, piece_id, piece))
+    
+    # Sort each stack by z_level
+    for coord_tuple in coord_to_pieces:
+        coord_to_pieces[coord_tuple].sort(key=lambda x: x[0])
+
+    # Draw pieces (handling stacks)
+    for coord_tuple, stack in coord_to_pieces.items():
+        coord = HexCoordinate(q=coord_tuple[0], r=coord_tuple[1], s=coord_tuple[2])
         x, y = hex_to_pixel(coord)
-        hx, hy = get_hexagon_vertices(x, y, hex_size)
+        
+        # Draw each piece in the stack with a slight offset for visibility
+        for z_level, piece_id, piece in stack:
+            # Offset for stacked pieces (shift slightly to show stacking)
+            offset_x = z_level * 0.15
+            offset_y = z_level * 0.15
+            
+            hx, hy = get_hexagon_vertices(x + offset_x, y + offset_y, hex_size * (0.95 - z_level * 0.05))
 
-        fill_color = team_colors.get(piece.team, 'lightgray')
-        line_color = team_border_colors.get(piece.team, 'gray')
+            fill_color = team_colors.get(piece.team, 'lightgray')
+            line_color = team_border_colors.get(piece.team, 'gray')
+            
+            # Make the border thicker for top piece
+            border_width = 3 if z_level == stack[-1][0] else 2
 
-        # Draw hexagon
-        fig.add_trace(go.Scatter(
-            x=hx, y=hy, fill='toself', fillcolor=fill_color,
-            line=dict(color=line_color, width=2),
-            mode='lines', showlegend=False,
-            hovertemplate=f'{piece.__class__.__name__} ({piece.team})<br>{coord}<extra></extra>'
-        ))
+            # Hover info showing stack details
+            stack_info = f'{piece.__class__.__name__} ({piece.team})<br>'
+            stack_info += f'Position: {coord}<br>'
+            stack_info += f'Z-level: {z_level}<br>'
+            if len(stack) > 1:
+                stack_info += f'Stack size: {len(stack)}<br>'
+                stack_pieces = [p[2].__class__.__name__ for p in stack]
+                stack_info += f'Stack: {" → ".join(stack_pieces)}'
 
-        # Draw piece icon
-        fig.add_trace(go.Scatter(
-            x=[x], y=[y], mode='text', text=[piece.icon],
-            textfont=dict(size=icon_size, color='black'),
-            showlegend=False, hoverinfo='skip'
-        ))
-
-        # Draw coordinates on top of the piece
-        if show_coordinates:
-            label_color = 'black' if fill_color == '#FFFFFF' else 'white'
+            # Draw hexagon
             fig.add_trace(go.Scatter(
-            x=[x],
-            y=[y + 0.1],  # slight vertical offset to avoid overlapping icon
-            mode='text',
-            text=[f'({coord.q},{coord.r},{coord.s})'],
-            textfont=dict(size=10, color=label_color),
-            showlegend=False,
-            hoverinfo='skip'
-        ))
+                x=hx, y=hy, fill='toself', fillcolor=fill_color,
+                line=dict(color=line_color, width=border_width),
+                mode='lines', showlegend=False,
+                hovertemplate=f'{stack_info}<extra></extra>'
+            ))
+
+            # Draw piece icon (only show top piece icon prominently)
+            icon_offset_y = 0
+            if z_level == stack[-1][0]:  # Top piece
+                fig.add_trace(go.Scatter(
+                    x=[x + offset_x], y=[y + offset_y + icon_offset_y], 
+                    mode='text', text=[piece.icon],
+                    textfont=dict(size=icon_size, color='black'),
+                    showlegend=False, hoverinfo='skip'
+                ))
+            else:  # Lower pieces in stack - show smaller
+                fig.add_trace(go.Scatter(
+                    x=[x + offset_x], y=[y + offset_y + icon_offset_y], 
+                    mode='text', text=[piece.icon],
+                    textfont=dict(size=int(icon_size * 0.6), color='gray'),
+                    showlegend=False, hoverinfo='skip'
+                ))
+
+        # Draw coordinates on top piece only
+        if show_coordinates:
+            top_z_level = stack[-1][0]
+            top_piece = stack[-1][2]
+            offset_x = top_z_level * 0.15
+            offset_y = top_z_level * 0.15
+            
+            fill_color = team_colors.get(top_piece.team, 'lightgray')
+            label_color = 'black' if fill_color == '#FFFFFF' else 'white'
+            
+            coord_text = f'({coord.q},{coord.r},{coord.s})'
+            if len(stack) > 1:
+                coord_text += f' [z{top_z_level}]'
+            
+            fig.add_trace(go.Scatter(
+                x=[x + offset_x],
+                y=[y + offset_y - 0.35],  # Below the icon
+                mode='text',
+                text=[coord_text],
+                textfont=dict(size=10, color=label_color),
+                showlegend=False,
+                hoverinfo='skip'
+            ))
 
     fig.update_layout(
-        title=f'Hive - Game Board Turn : TODO add this',
+        title=f'Hive - Game Board (Turn {turn_number})',
         showlegend=False,
         hovermode='closest',
         xaxis=dict(scaleanchor='y', scaleratio=1, showgrid=True, gridcolor='lightgray'),

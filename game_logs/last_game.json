@@ -1,0 +1,4043 @@
+[
+  {
+    "event": "game_start",
+    "timestamp": "2025-10-30T23:35:53.081605",
+    "white_bot": "WhiteBot",
+    "black_bot": "BlackBot"
+  },
+  {
+    "event": "turn",
+    "turn_number": 0,
+    "bot_name": "WhiteBot",
+    "team": "white",
+    "action_type": "place",
+    "piece_type": "queenbee",
+    "piece_id": "74871c2e-0b4d-42ed-927c-95beb3a86fd3",
+    "target": {
+      "q": 0,
+      "r": 0,
+      "s": 0
+    },
+    "board_state": {},
+    "offboard_pieces": {
+      "white": {
+        "Ant": 10,
+        "Grasshopper": 2,
+        "QueenBee": 1
+      },
+      "black": {
+        "Ant": 10,
+        "Grasshopper": 2,
+        "QueenBee": 1
+      }
+    },
+    "error": null
+  },
+  {
+    "event": "turn",
+    "turn_number": 1,
+    "bot_name": "BlackBot",
+    "team": "black",
+    "action_type": "place",
+    "piece_type": "queenbee",
+    "piece_id": "51bf0a9b-4e94-486f-bdee-4b8724b73389",
+    "target": {
+      "q": 0,
+      "r": -1,
+      "s": 1
+    },
+    "board_state": {
+      "74871c2e-0b4d-42ed-927c-95beb3a86fd3": {
+        "type": "QueenBee",
+        "team": "white",
+        "icon": "\ud83d\udc1d",
+        "q": 0,
+        "r": 0,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      }
+    },
+    "offboard_pieces": {
+      "white": {
+        "Ant": 10,
+        "Grasshopper": 2
+      },
+      "black": {
+        "Ant": 10,
+        "Grasshopper": 2,
+        "QueenBee": 1
+      }
+    },
+    "error": null
+  },
+  {
+    "event": "turn",
+    "turn_number": 2,
+    "bot_name": "WhiteBot",
+    "team": "white",
+    "action_type": "move",
+    "piece_type": null,
+    "piece_id": "74871c2e-0b4d-42ed-927c-95beb3a86fd3",
+    "target": {
+      "q": 1,
+      "r": 0,
+      "s": -1
+    },
+    "board_state": {
+      "74871c2e-0b4d-42ed-927c-95beb3a86fd3": {
+        "type": "QueenBee",
+        "team": "white",
+        "icon": "\ud83d\udc1d",
+        "q": 0,
+        "r": 0,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51bf0a9b-4e94-486f-bdee-4b8724b73389": {
+        "type": "QueenBee",
+        "team": "black",
+        "icon": "\ud83d\udc1d",
+        "q": 0,
+        "r": -1,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      }
+    },
+    "offboard_pieces": {
+      "white": {
+        "Ant": 10,
+        "Grasshopper": 2
+      },
+      "black": {
+        "Ant": 10,
+        "Grasshopper": 2
+      }
+    },
+    "error": null,
+    "valid_moves": [
+      {
+        "q": 1,
+        "r": -1,
+        "s": 0
+      },
+      {
+        "q": 1,
+        "r": 0,
+        "s": -1
+      },
+      {
+        "q": 0,
+        "r": 1,
+        "s": -1
+      },
+      {
+        "q": -1,
+        "r": 1,
+        "s": 0
+      },
+      {
+        "q": -1,
+        "r": 0,
+        "s": 1
+      }
+    ],
+    "num_valid_moves": 5
+  },
+  {
+    "event": "turn",
+    "turn_number": 3,
+    "bot_name": "BlackBot",
+    "team": "black",
+    "action_type": "move",
+    "piece_type": null,
+    "piece_id": "51bf0a9b-4e94-486f-bdee-4b8724b73389",
+    "target": {
+      "q": 0,
+      "r": 0,
+      "s": 0
+    },
+    "board_state": {
+      "74871c2e-0b4d-42ed-927c-95beb3a86fd3": {
+        "type": "QueenBee",
+        "team": "white",
+        "icon": "\ud83d\udc1d",
+        "q": 1,
+        "r": 0,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51bf0a9b-4e94-486f-bdee-4b8724b73389": {
+        "type": "QueenBee",
+        "team": "black",
+        "icon": "\ud83d\udc1d",
+        "q": 0,
+        "r": -1,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      }
+    },
+    "offboard_pieces": {
+      "white": {
+        "Ant": 10,
+        "Grasshopper": 2
+      },
+      "black": {
+        "Ant": 10,
+        "Grasshopper": 2
+      }
+    },
+    "error": null,
+    "valid_moves": [
+      {
+        "q": 1,
+        "r": -2,
+        "s": 1
+      },
+      {
+        "q": 1,
+        "r": -1,
+        "s": 0
+      },
+      {
+        "q": 0,
+        "r": 0,
+        "s": 0
+      },
+      {
+        "q": -1,
+        "r": 0,
+        "s": 1
+      },
+      {
+        "q": -1,
+        "r": -1,
+        "s": 2
+      },
+      {
+        "q": 0,
+        "r": -2,
+        "s": 2
+      }
+    ],
+    "num_valid_moves": 6
+  },
+  {
+    "event": "turn",
+    "turn_number": 4,
+    "bot_name": "WhiteBot",
+    "team": "white",
+    "action_type": "move",
+    "piece_type": null,
+    "piece_id": "74871c2e-0b4d-42ed-927c-95beb3a86fd3",
+    "target": {
+      "q": 1,
+      "r": -1,
+      "s": 0
+    },
+    "board_state": {
+      "74871c2e-0b4d-42ed-927c-95beb3a86fd3": {
+        "type": "QueenBee",
+        "team": "white",
+        "icon": "\ud83d\udc1d",
+        "q": 1,
+        "r": 0,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51bf0a9b-4e94-486f-bdee-4b8724b73389": {
+        "type": "QueenBee",
+        "team": "black",
+        "icon": "\ud83d\udc1d",
+        "q": 0,
+        "r": 0,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      }
+    },
+    "offboard_pieces": {
+      "white": {
+        "Ant": 10,
+        "Grasshopper": 2
+      },
+      "black": {
+        "Ant": 10,
+        "Grasshopper": 2
+      }
+    },
+    "error": null,
+    "valid_moves": [
+      {
+        "q": 2,
+        "r": -1,
+        "s": -1
+      },
+      {
+        "q": 2,
+        "r": 0,
+        "s": -2
+      },
+      {
+        "q": 1,
+        "r": 1,
+        "s": -2
+      },
+      {
+        "q": 0,
+        "r": 1,
+        "s": -1
+      },
+      {
+        "q": 1,
+        "r": -1,
+        "s": 0
+      }
+    ],
+    "num_valid_moves": 5
+  },
+  {
+    "event": "turn",
+    "turn_number": 5,
+    "bot_name": "BlackBot",
+    "team": "black",
+    "action_type": "move",
+    "piece_type": null,
+    "piece_id": "51bf0a9b-4e94-486f-bdee-4b8724b73389",
+    "target": {
+      "q": 0,
+      "r": 1,
+      "s": -1
+    },
+    "board_state": {
+      "74871c2e-0b4d-42ed-927c-95beb3a86fd3": {
+        "type": "QueenBee",
+        "team": "white",
+        "icon": "\ud83d\udc1d",
+        "q": 1,
+        "r": -1,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51bf0a9b-4e94-486f-bdee-4b8724b73389": {
+        "type": "QueenBee",
+        "team": "black",
+        "icon": "\ud83d\udc1d",
+        "q": 0,
+        "r": 0,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      }
+    },
+    "offboard_pieces": {
+      "white": {
+        "Ant": 10,
+        "Grasshopper": 2
+      },
+      "black": {
+        "Ant": 10,
+        "Grasshopper": 2
+      }
+    },
+    "error": null,
+    "valid_moves": [
+      {
+        "q": 1,
+        "r": 0,
+        "s": -1
+      },
+      {
+        "q": 0,
+        "r": 1,
+        "s": -1
+      },
+      {
+        "q": -1,
+        "r": 1,
+        "s": 0
+      },
+      {
+        "q": -1,
+        "r": 0,
+        "s": 1
+      },
+      {
+        "q": 0,
+        "r": -1,
+        "s": 1
+      }
+    ],
+    "num_valid_moves": 5
+  },
+  {
+    "event": "turn",
+    "turn_number": 6,
+    "bot_name": "WhiteBot",
+    "team": "white",
+    "action_type": "move",
+    "piece_type": null,
+    "piece_id": "74871c2e-0b4d-42ed-927c-95beb3a86fd3",
+    "target": {
+      "q": 2,
+      "r": -2,
+      "s": 0
+    },
+    "board_state": {
+      "74871c2e-0b4d-42ed-927c-95beb3a86fd3": {
+        "type": "QueenBee",
+        "team": "white",
+        "icon": "\ud83d\udc1d",
+        "q": 1,
+        "r": -1,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51bf0a9b-4e94-486f-bdee-4b8724b73389": {
+        "type": "QueenBee",
+        "team": "black",
+        "icon": "\ud83d\udc1d",
+        "q": 0,
+        "r": 1,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      }
+    },
+    "offboard_pieces": {
+      "white": {
+        "Ant": 10,
+        "Grasshopper": 2
+      },
+      "black": {
+        "Ant": 10,
+        "Grasshopper": 2
+      }
+    },
+    "error": null,
+    "valid_moves": [
+      {
+        "q": 2,
+        "r": -2,
+        "s": 0
+      },
+      {
+        "q": 2,
+        "r": -1,
+        "s": -1
+      },
+      {
+        "q": 1,
+        "r": 0,
+        "s": -1
+      },
+      {
+        "q": 0,
+        "r": 0,
+        "s": 0
+      },
+      {
+        "q": 0,
+        "r": -1,
+        "s": 1
+      },
+      {
+        "q": 1,
+        "r": -2,
+        "s": 1
+      }
+    ],
+    "num_valid_moves": 6
+  },
+  {
+    "event": "turn",
+    "turn_number": 7,
+    "bot_name": "BlackBot",
+    "team": "black",
+    "action_type": "place",
+    "piece_type": "grasshopper",
+    "piece_id": "51040e79-a395-4b13-bb20-9f0b016abbe8",
+    "target": {
+      "q": 1,
+      "r": 0,
+      "s": -1
+    },
+    "board_state": {
+      "74871c2e-0b4d-42ed-927c-95beb3a86fd3": {
+        "type": "QueenBee",
+        "team": "white",
+        "icon": "\ud83d\udc1d",
+        "q": 2,
+        "r": -2,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51bf0a9b-4e94-486f-bdee-4b8724b73389": {
+        "type": "QueenBee",
+        "team": "black",
+        "icon": "\ud83d\udc1d",
+        "q": 0,
+        "r": 1,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      }
+    },
+    "offboard_pieces": {
+      "white": {
+        "Ant": 10,
+        "Grasshopper": 2
+      },
+      "black": {
+        "Ant": 10,
+        "Grasshopper": 2
+      }
+    },
+    "error": null
+  },
+  {
+    "event": "turn",
+    "turn_number": 8,
+    "bot_name": "WhiteBot",
+    "team": "white",
+    "action_type": "place",
+    "piece_type": "grasshopper",
+    "piece_id": "7a167e48-6f73-41b0-8345-2a8b698bf195",
+    "target": {
+      "q": 3,
+      "r": -2,
+      "s": -1
+    },
+    "board_state": {
+      "74871c2e-0b4d-42ed-927c-95beb3a86fd3": {
+        "type": "QueenBee",
+        "team": "white",
+        "icon": "\ud83d\udc1d",
+        "q": 2,
+        "r": -2,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51bf0a9b-4e94-486f-bdee-4b8724b73389": {
+        "type": "QueenBee",
+        "team": "black",
+        "icon": "\ud83d\udc1d",
+        "q": 0,
+        "r": 1,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51040e79-a395-4b13-bb20-9f0b016abbe8": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 1,
+        "r": 0,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      }
+    },
+    "offboard_pieces": {
+      "white": {
+        "Ant": 10,
+        "Grasshopper": 2
+      },
+      "black": {
+        "Ant": 10,
+        "Grasshopper": 1
+      }
+    },
+    "error": null
+  },
+  {
+    "event": "turn",
+    "turn_number": 9,
+    "bot_name": "BlackBot",
+    "team": "black",
+    "action_type": "place",
+    "piece_type": "grasshopper",
+    "piece_id": "c960e9e5-0000-46a1-aceb-db70a435a78d",
+    "target": {
+      "q": 0,
+      "r": 0,
+      "s": 0
+    },
+    "board_state": {
+      "74871c2e-0b4d-42ed-927c-95beb3a86fd3": {
+        "type": "QueenBee",
+        "team": "white",
+        "icon": "\ud83d\udc1d",
+        "q": 2,
+        "r": -2,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51bf0a9b-4e94-486f-bdee-4b8724b73389": {
+        "type": "QueenBee",
+        "team": "black",
+        "icon": "\ud83d\udc1d",
+        "q": 0,
+        "r": 1,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51040e79-a395-4b13-bb20-9f0b016abbe8": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 1,
+        "r": 0,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "7a167e48-6f73-41b0-8345-2a8b698bf195": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 3,
+        "r": -2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      }
+    },
+    "offboard_pieces": {
+      "white": {
+        "Ant": 10,
+        "Grasshopper": 1
+      },
+      "black": {
+        "Ant": 10,
+        "Grasshopper": 1
+      }
+    },
+    "error": null
+  },
+  {
+    "event": "turn",
+    "turn_number": 10,
+    "bot_name": "WhiteBot",
+    "team": "white",
+    "action_type": "place",
+    "piece_type": "ant",
+    "piece_id": "f5da3e17-b46b-43c1-ac58-c70bceea634d",
+    "target": {
+      "q": 2,
+      "r": -3,
+      "s": 1
+    },
+    "board_state": {
+      "74871c2e-0b4d-42ed-927c-95beb3a86fd3": {
+        "type": "QueenBee",
+        "team": "white",
+        "icon": "\ud83d\udc1d",
+        "q": 2,
+        "r": -2,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51bf0a9b-4e94-486f-bdee-4b8724b73389": {
+        "type": "QueenBee",
+        "team": "black",
+        "icon": "\ud83d\udc1d",
+        "q": 0,
+        "r": 1,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51040e79-a395-4b13-bb20-9f0b016abbe8": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 1,
+        "r": 0,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "7a167e48-6f73-41b0-8345-2a8b698bf195": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 3,
+        "r": -2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "c960e9e5-0000-46a1-aceb-db70a435a78d": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 0,
+        "r": 0,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      }
+    },
+    "offboard_pieces": {
+      "white": {
+        "Ant": 10,
+        "Grasshopper": 1
+      },
+      "black": {
+        "Ant": 10
+      }
+    },
+    "error": null
+  },
+  {
+    "event": "turn",
+    "turn_number": 11,
+    "bot_name": "BlackBot",
+    "team": "black",
+    "action_type": "place",
+    "piece_type": "ant",
+    "piece_id": "b04b7247-7716-410b-b5b9-924125f6ee90",
+    "target": {
+      "q": 0,
+      "r": -1,
+      "s": 1
+    },
+    "board_state": {
+      "74871c2e-0b4d-42ed-927c-95beb3a86fd3": {
+        "type": "QueenBee",
+        "team": "white",
+        "icon": "\ud83d\udc1d",
+        "q": 2,
+        "r": -2,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51bf0a9b-4e94-486f-bdee-4b8724b73389": {
+        "type": "QueenBee",
+        "team": "black",
+        "icon": "\ud83d\udc1d",
+        "q": 0,
+        "r": 1,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51040e79-a395-4b13-bb20-9f0b016abbe8": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 1,
+        "r": 0,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "7a167e48-6f73-41b0-8345-2a8b698bf195": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 3,
+        "r": -2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "c960e9e5-0000-46a1-aceb-db70a435a78d": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 0,
+        "r": 0,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "f5da3e17-b46b-43c1-ac58-c70bceea634d": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 2,
+        "r": -3,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      }
+    },
+    "offboard_pieces": {
+      "white": {
+        "Ant": 9,
+        "Grasshopper": 1
+      },
+      "black": {
+        "Ant": 10
+      }
+    },
+    "error": null
+  },
+  {
+    "event": "turn",
+    "turn_number": 12,
+    "bot_name": "WhiteBot",
+    "team": "white",
+    "action_type": "place",
+    "piece_type": "ant",
+    "piece_id": "5b5814fb-dd52-4d92-844b-004ed0689370",
+    "target": {
+      "q": 3,
+      "r": -1,
+      "s": -2
+    },
+    "board_state": {
+      "74871c2e-0b4d-42ed-927c-95beb3a86fd3": {
+        "type": "QueenBee",
+        "team": "white",
+        "icon": "\ud83d\udc1d",
+        "q": 2,
+        "r": -2,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51bf0a9b-4e94-486f-bdee-4b8724b73389": {
+        "type": "QueenBee",
+        "team": "black",
+        "icon": "\ud83d\udc1d",
+        "q": 0,
+        "r": 1,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51040e79-a395-4b13-bb20-9f0b016abbe8": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 1,
+        "r": 0,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "7a167e48-6f73-41b0-8345-2a8b698bf195": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 3,
+        "r": -2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "c960e9e5-0000-46a1-aceb-db70a435a78d": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 0,
+        "r": 0,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "f5da3e17-b46b-43c1-ac58-c70bceea634d": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 2,
+        "r": -3,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "b04b7247-7716-410b-b5b9-924125f6ee90": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 0,
+        "r": -1,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      }
+    },
+    "offboard_pieces": {
+      "white": {
+        "Ant": 9,
+        "Grasshopper": 1
+      },
+      "black": {
+        "Ant": 9
+      }
+    },
+    "error": null
+  },
+  {
+    "event": "turn",
+    "turn_number": 13,
+    "bot_name": "BlackBot",
+    "team": "black",
+    "action_type": "place",
+    "piece_type": "ant",
+    "piece_id": "ebb64b08-d342-45d6-943d-0a3e5a58e124",
+    "target": {
+      "q": -1,
+      "r": 2,
+      "s": -1
+    },
+    "board_state": {
+      "74871c2e-0b4d-42ed-927c-95beb3a86fd3": {
+        "type": "QueenBee",
+        "team": "white",
+        "icon": "\ud83d\udc1d",
+        "q": 2,
+        "r": -2,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51bf0a9b-4e94-486f-bdee-4b8724b73389": {
+        "type": "QueenBee",
+        "team": "black",
+        "icon": "\ud83d\udc1d",
+        "q": 0,
+        "r": 1,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51040e79-a395-4b13-bb20-9f0b016abbe8": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 1,
+        "r": 0,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "7a167e48-6f73-41b0-8345-2a8b698bf195": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 3,
+        "r": -2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "c960e9e5-0000-46a1-aceb-db70a435a78d": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 0,
+        "r": 0,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "f5da3e17-b46b-43c1-ac58-c70bceea634d": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 2,
+        "r": -3,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "b04b7247-7716-410b-b5b9-924125f6ee90": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 0,
+        "r": -1,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "5b5814fb-dd52-4d92-844b-004ed0689370": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": -1,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      }
+    },
+    "offboard_pieces": {
+      "white": {
+        "Ant": 8,
+        "Grasshopper": 1
+      },
+      "black": {
+        "Ant": 9
+      }
+    },
+    "error": null
+  },
+  {
+    "event": "turn",
+    "turn_number": 14,
+    "bot_name": "WhiteBot",
+    "team": "white",
+    "action_type": "place",
+    "piece_type": "grasshopper",
+    "piece_id": "14a1c39e-cb3d-495b-a827-57f2d46c5adf",
+    "target": {
+      "q": 4,
+      "r": -2,
+      "s": -2
+    },
+    "board_state": {
+      "74871c2e-0b4d-42ed-927c-95beb3a86fd3": {
+        "type": "QueenBee",
+        "team": "white",
+        "icon": "\ud83d\udc1d",
+        "q": 2,
+        "r": -2,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51bf0a9b-4e94-486f-bdee-4b8724b73389": {
+        "type": "QueenBee",
+        "team": "black",
+        "icon": "\ud83d\udc1d",
+        "q": 0,
+        "r": 1,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51040e79-a395-4b13-bb20-9f0b016abbe8": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 1,
+        "r": 0,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "7a167e48-6f73-41b0-8345-2a8b698bf195": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 3,
+        "r": -2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "c960e9e5-0000-46a1-aceb-db70a435a78d": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 0,
+        "r": 0,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "f5da3e17-b46b-43c1-ac58-c70bceea634d": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 2,
+        "r": -3,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "b04b7247-7716-410b-b5b9-924125f6ee90": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 0,
+        "r": -1,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "5b5814fb-dd52-4d92-844b-004ed0689370": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": -1,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ebb64b08-d342-45d6-943d-0a3e5a58e124": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      }
+    },
+    "offboard_pieces": {
+      "white": {
+        "Ant": 8,
+        "Grasshopper": 1
+      },
+      "black": {
+        "Ant": 8
+      }
+    },
+    "error": null
+  },
+  {
+    "event": "turn",
+    "turn_number": 15,
+    "bot_name": "BlackBot",
+    "team": "black",
+    "action_type": "place",
+    "piece_type": "ant",
+    "piece_id": "6a14356e-fc2a-4b42-aefd-9d706e63571d",
+    "target": {
+      "q": -1,
+      "r": 0,
+      "s": 1
+    },
+    "board_state": {
+      "74871c2e-0b4d-42ed-927c-95beb3a86fd3": {
+        "type": "QueenBee",
+        "team": "white",
+        "icon": "\ud83d\udc1d",
+        "q": 2,
+        "r": -2,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51bf0a9b-4e94-486f-bdee-4b8724b73389": {
+        "type": "QueenBee",
+        "team": "black",
+        "icon": "\ud83d\udc1d",
+        "q": 0,
+        "r": 1,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51040e79-a395-4b13-bb20-9f0b016abbe8": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 1,
+        "r": 0,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "7a167e48-6f73-41b0-8345-2a8b698bf195": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 3,
+        "r": -2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "c960e9e5-0000-46a1-aceb-db70a435a78d": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 0,
+        "r": 0,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "f5da3e17-b46b-43c1-ac58-c70bceea634d": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 2,
+        "r": -3,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "b04b7247-7716-410b-b5b9-924125f6ee90": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 0,
+        "r": -1,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "5b5814fb-dd52-4d92-844b-004ed0689370": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": -1,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ebb64b08-d342-45d6-943d-0a3e5a58e124": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "14a1c39e-cb3d-495b-a827-57f2d46c5adf": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 4,
+        "r": -2,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      }
+    },
+    "offboard_pieces": {
+      "white": {
+        "Ant": 8
+      },
+      "black": {
+        "Ant": 8
+      }
+    },
+    "error": null
+  },
+  {
+    "event": "turn",
+    "turn_number": 16,
+    "bot_name": "WhiteBot",
+    "team": "white",
+    "action_type": "place",
+    "piece_type": "ant",
+    "piece_id": "e70a987c-6f6c-48c3-b908-1a2e7480536f",
+    "target": {
+      "q": 3,
+      "r": -3,
+      "s": 0
+    },
+    "board_state": {
+      "74871c2e-0b4d-42ed-927c-95beb3a86fd3": {
+        "type": "QueenBee",
+        "team": "white",
+        "icon": "\ud83d\udc1d",
+        "q": 2,
+        "r": -2,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51bf0a9b-4e94-486f-bdee-4b8724b73389": {
+        "type": "QueenBee",
+        "team": "black",
+        "icon": "\ud83d\udc1d",
+        "q": 0,
+        "r": 1,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51040e79-a395-4b13-bb20-9f0b016abbe8": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 1,
+        "r": 0,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "7a167e48-6f73-41b0-8345-2a8b698bf195": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 3,
+        "r": -2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "c960e9e5-0000-46a1-aceb-db70a435a78d": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 0,
+        "r": 0,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "f5da3e17-b46b-43c1-ac58-c70bceea634d": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 2,
+        "r": -3,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "b04b7247-7716-410b-b5b9-924125f6ee90": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 0,
+        "r": -1,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "5b5814fb-dd52-4d92-844b-004ed0689370": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": -1,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ebb64b08-d342-45d6-943d-0a3e5a58e124": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "14a1c39e-cb3d-495b-a827-57f2d46c5adf": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 4,
+        "r": -2,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "6a14356e-fc2a-4b42-aefd-9d706e63571d": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 0,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      }
+    },
+    "offboard_pieces": {
+      "white": {
+        "Ant": 8
+      },
+      "black": {
+        "Ant": 7
+      }
+    },
+    "error": null
+  },
+  {
+    "event": "turn",
+    "turn_number": 17,
+    "bot_name": "BlackBot",
+    "team": "black",
+    "action_type": "place",
+    "piece_type": "ant",
+    "piece_id": "ed1e3582-553c-45a0-b99f-06560e46a703",
+    "target": {
+      "q": 0,
+      "r": 2,
+      "s": -2
+    },
+    "board_state": {
+      "74871c2e-0b4d-42ed-927c-95beb3a86fd3": {
+        "type": "QueenBee",
+        "team": "white",
+        "icon": "\ud83d\udc1d",
+        "q": 2,
+        "r": -2,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51bf0a9b-4e94-486f-bdee-4b8724b73389": {
+        "type": "QueenBee",
+        "team": "black",
+        "icon": "\ud83d\udc1d",
+        "q": 0,
+        "r": 1,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51040e79-a395-4b13-bb20-9f0b016abbe8": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 1,
+        "r": 0,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "7a167e48-6f73-41b0-8345-2a8b698bf195": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 3,
+        "r": -2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "c960e9e5-0000-46a1-aceb-db70a435a78d": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 0,
+        "r": 0,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "f5da3e17-b46b-43c1-ac58-c70bceea634d": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 2,
+        "r": -3,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "b04b7247-7716-410b-b5b9-924125f6ee90": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 0,
+        "r": -1,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "5b5814fb-dd52-4d92-844b-004ed0689370": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": -1,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ebb64b08-d342-45d6-943d-0a3e5a58e124": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "14a1c39e-cb3d-495b-a827-57f2d46c5adf": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 4,
+        "r": -2,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "6a14356e-fc2a-4b42-aefd-9d706e63571d": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 0,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "e70a987c-6f6c-48c3-b908-1a2e7480536f": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": -3,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      }
+    },
+    "offboard_pieces": {
+      "white": {
+        "Ant": 7
+      },
+      "black": {
+        "Ant": 7
+      }
+    },
+    "error": null
+  },
+  {
+    "event": "turn",
+    "turn_number": 18,
+    "bot_name": "WhiteBot",
+    "team": "white",
+    "action_type": "place",
+    "piece_type": "ant",
+    "piece_id": "664b140a-b5c7-43dc-953d-d1dd4ec8468e",
+    "target": {
+      "q": 3,
+      "r": 0,
+      "s": -3
+    },
+    "board_state": {
+      "74871c2e-0b4d-42ed-927c-95beb3a86fd3": {
+        "type": "QueenBee",
+        "team": "white",
+        "icon": "\ud83d\udc1d",
+        "q": 2,
+        "r": -2,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51bf0a9b-4e94-486f-bdee-4b8724b73389": {
+        "type": "QueenBee",
+        "team": "black",
+        "icon": "\ud83d\udc1d",
+        "q": 0,
+        "r": 1,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51040e79-a395-4b13-bb20-9f0b016abbe8": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 1,
+        "r": 0,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "7a167e48-6f73-41b0-8345-2a8b698bf195": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 3,
+        "r": -2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "c960e9e5-0000-46a1-aceb-db70a435a78d": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 0,
+        "r": 0,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "f5da3e17-b46b-43c1-ac58-c70bceea634d": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 2,
+        "r": -3,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "b04b7247-7716-410b-b5b9-924125f6ee90": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 0,
+        "r": -1,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "5b5814fb-dd52-4d92-844b-004ed0689370": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": -1,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ebb64b08-d342-45d6-943d-0a3e5a58e124": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "14a1c39e-cb3d-495b-a827-57f2d46c5adf": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 4,
+        "r": -2,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "6a14356e-fc2a-4b42-aefd-9d706e63571d": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 0,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "e70a987c-6f6c-48c3-b908-1a2e7480536f": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": -3,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ed1e3582-553c-45a0-b99f-06560e46a703": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 0,
+        "r": 2,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      }
+    },
+    "offboard_pieces": {
+      "white": {
+        "Ant": 7
+      },
+      "black": {
+        "Ant": 6
+      }
+    },
+    "error": null
+  },
+  {
+    "event": "turn",
+    "turn_number": 19,
+    "bot_name": "BlackBot",
+    "team": "black",
+    "action_type": "place",
+    "piece_type": "ant",
+    "piece_id": "5797fd7a-9af3-4f08-83c2-8d1774d95ac3",
+    "target": {
+      "q": -1,
+      "r": -1,
+      "s": 2
+    },
+    "board_state": {
+      "74871c2e-0b4d-42ed-927c-95beb3a86fd3": {
+        "type": "QueenBee",
+        "team": "white",
+        "icon": "\ud83d\udc1d",
+        "q": 2,
+        "r": -2,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51bf0a9b-4e94-486f-bdee-4b8724b73389": {
+        "type": "QueenBee",
+        "team": "black",
+        "icon": "\ud83d\udc1d",
+        "q": 0,
+        "r": 1,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51040e79-a395-4b13-bb20-9f0b016abbe8": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 1,
+        "r": 0,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "7a167e48-6f73-41b0-8345-2a8b698bf195": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 3,
+        "r": -2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "c960e9e5-0000-46a1-aceb-db70a435a78d": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 0,
+        "r": 0,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "f5da3e17-b46b-43c1-ac58-c70bceea634d": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 2,
+        "r": -3,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "b04b7247-7716-410b-b5b9-924125f6ee90": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 0,
+        "r": -1,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "5b5814fb-dd52-4d92-844b-004ed0689370": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": -1,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ebb64b08-d342-45d6-943d-0a3e5a58e124": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "14a1c39e-cb3d-495b-a827-57f2d46c5adf": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 4,
+        "r": -2,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "6a14356e-fc2a-4b42-aefd-9d706e63571d": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 0,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "e70a987c-6f6c-48c3-b908-1a2e7480536f": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": -3,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ed1e3582-553c-45a0-b99f-06560e46a703": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 0,
+        "r": 2,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "664b140a-b5c7-43dc-953d-d1dd4ec8468e": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": 0,
+        "s": -3,
+        "z_level": 0,
+        "is_pinned": false
+      }
+    },
+    "offboard_pieces": {
+      "white": {
+        "Ant": 6
+      },
+      "black": {
+        "Ant": 6
+      }
+    },
+    "error": null
+  },
+  {
+    "event": "turn",
+    "turn_number": 20,
+    "bot_name": "WhiteBot",
+    "team": "white",
+    "action_type": "place",
+    "piece_type": "ant",
+    "piece_id": "dea53d37-9373-4963-8852-1064d0658689",
+    "target": {
+      "q": 5,
+      "r": -2,
+      "s": -3
+    },
+    "board_state": {
+      "74871c2e-0b4d-42ed-927c-95beb3a86fd3": {
+        "type": "QueenBee",
+        "team": "white",
+        "icon": "\ud83d\udc1d",
+        "q": 2,
+        "r": -2,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51bf0a9b-4e94-486f-bdee-4b8724b73389": {
+        "type": "QueenBee",
+        "team": "black",
+        "icon": "\ud83d\udc1d",
+        "q": 0,
+        "r": 1,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51040e79-a395-4b13-bb20-9f0b016abbe8": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 1,
+        "r": 0,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "7a167e48-6f73-41b0-8345-2a8b698bf195": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 3,
+        "r": -2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "c960e9e5-0000-46a1-aceb-db70a435a78d": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 0,
+        "r": 0,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "f5da3e17-b46b-43c1-ac58-c70bceea634d": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 2,
+        "r": -3,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "b04b7247-7716-410b-b5b9-924125f6ee90": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 0,
+        "r": -1,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "5b5814fb-dd52-4d92-844b-004ed0689370": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": -1,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ebb64b08-d342-45d6-943d-0a3e5a58e124": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "14a1c39e-cb3d-495b-a827-57f2d46c5adf": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 4,
+        "r": -2,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "6a14356e-fc2a-4b42-aefd-9d706e63571d": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 0,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "e70a987c-6f6c-48c3-b908-1a2e7480536f": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": -3,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ed1e3582-553c-45a0-b99f-06560e46a703": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 0,
+        "r": 2,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "664b140a-b5c7-43dc-953d-d1dd4ec8468e": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": 0,
+        "s": -3,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "5797fd7a-9af3-4f08-83c2-8d1774d95ac3": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": -1,
+        "s": 2,
+        "z_level": 0,
+        "is_pinned": false
+      }
+    },
+    "offboard_pieces": {
+      "white": {
+        "Ant": 6
+      },
+      "black": {
+        "Ant": 5
+      }
+    },
+    "error": null
+  },
+  {
+    "event": "turn",
+    "turn_number": 21,
+    "bot_name": "BlackBot",
+    "team": "black",
+    "action_type": "place",
+    "piece_type": "ant",
+    "piece_id": "7459fda4-20ca-4f3a-a200-ffb630eeb5f0",
+    "target": {
+      "q": 1,
+      "r": 1,
+      "s": -2
+    },
+    "board_state": {
+      "74871c2e-0b4d-42ed-927c-95beb3a86fd3": {
+        "type": "QueenBee",
+        "team": "white",
+        "icon": "\ud83d\udc1d",
+        "q": 2,
+        "r": -2,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51bf0a9b-4e94-486f-bdee-4b8724b73389": {
+        "type": "QueenBee",
+        "team": "black",
+        "icon": "\ud83d\udc1d",
+        "q": 0,
+        "r": 1,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51040e79-a395-4b13-bb20-9f0b016abbe8": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 1,
+        "r": 0,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "7a167e48-6f73-41b0-8345-2a8b698bf195": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 3,
+        "r": -2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "c960e9e5-0000-46a1-aceb-db70a435a78d": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 0,
+        "r": 0,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "f5da3e17-b46b-43c1-ac58-c70bceea634d": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 2,
+        "r": -3,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "b04b7247-7716-410b-b5b9-924125f6ee90": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 0,
+        "r": -1,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "5b5814fb-dd52-4d92-844b-004ed0689370": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": -1,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ebb64b08-d342-45d6-943d-0a3e5a58e124": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "14a1c39e-cb3d-495b-a827-57f2d46c5adf": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 4,
+        "r": -2,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "6a14356e-fc2a-4b42-aefd-9d706e63571d": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 0,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "e70a987c-6f6c-48c3-b908-1a2e7480536f": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": -3,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ed1e3582-553c-45a0-b99f-06560e46a703": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 0,
+        "r": 2,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "664b140a-b5c7-43dc-953d-d1dd4ec8468e": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": 0,
+        "s": -3,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "5797fd7a-9af3-4f08-83c2-8d1774d95ac3": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": -1,
+        "s": 2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "dea53d37-9373-4963-8852-1064d0658689": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 5,
+        "r": -2,
+        "s": -3,
+        "z_level": 0,
+        "is_pinned": false
+      }
+    },
+    "offboard_pieces": {
+      "white": {
+        "Ant": 5
+      },
+      "black": {
+        "Ant": 5
+      }
+    },
+    "error": null
+  },
+  {
+    "event": "turn",
+    "turn_number": 22,
+    "bot_name": "WhiteBot",
+    "team": "white",
+    "action_type": "place",
+    "piece_type": "ant",
+    "piece_id": "05061858-04cd-403c-a9f9-603cdf12c9c1",
+    "target": {
+      "q": 4,
+      "r": -4,
+      "s": 0
+    },
+    "board_state": {
+      "74871c2e-0b4d-42ed-927c-95beb3a86fd3": {
+        "type": "QueenBee",
+        "team": "white",
+        "icon": "\ud83d\udc1d",
+        "q": 2,
+        "r": -2,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51bf0a9b-4e94-486f-bdee-4b8724b73389": {
+        "type": "QueenBee",
+        "team": "black",
+        "icon": "\ud83d\udc1d",
+        "q": 0,
+        "r": 1,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51040e79-a395-4b13-bb20-9f0b016abbe8": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 1,
+        "r": 0,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "7a167e48-6f73-41b0-8345-2a8b698bf195": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 3,
+        "r": -2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "c960e9e5-0000-46a1-aceb-db70a435a78d": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 0,
+        "r": 0,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "f5da3e17-b46b-43c1-ac58-c70bceea634d": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 2,
+        "r": -3,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "b04b7247-7716-410b-b5b9-924125f6ee90": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 0,
+        "r": -1,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "5b5814fb-dd52-4d92-844b-004ed0689370": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": -1,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ebb64b08-d342-45d6-943d-0a3e5a58e124": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "14a1c39e-cb3d-495b-a827-57f2d46c5adf": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 4,
+        "r": -2,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "6a14356e-fc2a-4b42-aefd-9d706e63571d": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 0,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "e70a987c-6f6c-48c3-b908-1a2e7480536f": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": -3,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ed1e3582-553c-45a0-b99f-06560e46a703": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 0,
+        "r": 2,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "664b140a-b5c7-43dc-953d-d1dd4ec8468e": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": 0,
+        "s": -3,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "5797fd7a-9af3-4f08-83c2-8d1774d95ac3": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": -1,
+        "s": 2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "dea53d37-9373-4963-8852-1064d0658689": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 5,
+        "r": -2,
+        "s": -3,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "7459fda4-20ca-4f3a-a200-ffb630eeb5f0": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 1,
+        "r": 1,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      }
+    },
+    "offboard_pieces": {
+      "white": {
+        "Ant": 5
+      },
+      "black": {
+        "Ant": 4
+      }
+    },
+    "error": null
+  },
+  {
+    "event": "turn",
+    "turn_number": 23,
+    "bot_name": "BlackBot",
+    "team": "black",
+    "action_type": "place",
+    "piece_type": "ant",
+    "piece_id": "f6094cfc-ce1a-485d-af50-0ed7350f54b6",
+    "target": {
+      "q": -2,
+      "r": 1,
+      "s": 1
+    },
+    "board_state": {
+      "74871c2e-0b4d-42ed-927c-95beb3a86fd3": {
+        "type": "QueenBee",
+        "team": "white",
+        "icon": "\ud83d\udc1d",
+        "q": 2,
+        "r": -2,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51bf0a9b-4e94-486f-bdee-4b8724b73389": {
+        "type": "QueenBee",
+        "team": "black",
+        "icon": "\ud83d\udc1d",
+        "q": 0,
+        "r": 1,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51040e79-a395-4b13-bb20-9f0b016abbe8": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 1,
+        "r": 0,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "7a167e48-6f73-41b0-8345-2a8b698bf195": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 3,
+        "r": -2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "c960e9e5-0000-46a1-aceb-db70a435a78d": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 0,
+        "r": 0,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "f5da3e17-b46b-43c1-ac58-c70bceea634d": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 2,
+        "r": -3,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "b04b7247-7716-410b-b5b9-924125f6ee90": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 0,
+        "r": -1,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "5b5814fb-dd52-4d92-844b-004ed0689370": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": -1,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ebb64b08-d342-45d6-943d-0a3e5a58e124": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "14a1c39e-cb3d-495b-a827-57f2d46c5adf": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 4,
+        "r": -2,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "6a14356e-fc2a-4b42-aefd-9d706e63571d": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 0,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "e70a987c-6f6c-48c3-b908-1a2e7480536f": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": -3,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ed1e3582-553c-45a0-b99f-06560e46a703": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 0,
+        "r": 2,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "664b140a-b5c7-43dc-953d-d1dd4ec8468e": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": 0,
+        "s": -3,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "5797fd7a-9af3-4f08-83c2-8d1774d95ac3": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": -1,
+        "s": 2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "dea53d37-9373-4963-8852-1064d0658689": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 5,
+        "r": -2,
+        "s": -3,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "7459fda4-20ca-4f3a-a200-ffb630eeb5f0": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 1,
+        "r": 1,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "05061858-04cd-403c-a9f9-603cdf12c9c1": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 4,
+        "r": -4,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      }
+    },
+    "offboard_pieces": {
+      "white": {
+        "Ant": 4
+      },
+      "black": {
+        "Ant": 4
+      }
+    },
+    "error": null
+  },
+  {
+    "event": "turn",
+    "turn_number": 24,
+    "bot_name": "WhiteBot",
+    "team": "white",
+    "action_type": "place",
+    "piece_type": "ant",
+    "piece_id": "ee687bd7-ae1a-4255-8360-f97a7e33290a",
+    "target": {
+      "q": 5,
+      "r": -3,
+      "s": -2
+    },
+    "board_state": {
+      "74871c2e-0b4d-42ed-927c-95beb3a86fd3": {
+        "type": "QueenBee",
+        "team": "white",
+        "icon": "\ud83d\udc1d",
+        "q": 2,
+        "r": -2,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51bf0a9b-4e94-486f-bdee-4b8724b73389": {
+        "type": "QueenBee",
+        "team": "black",
+        "icon": "\ud83d\udc1d",
+        "q": 0,
+        "r": 1,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51040e79-a395-4b13-bb20-9f0b016abbe8": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 1,
+        "r": 0,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "7a167e48-6f73-41b0-8345-2a8b698bf195": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 3,
+        "r": -2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "c960e9e5-0000-46a1-aceb-db70a435a78d": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 0,
+        "r": 0,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "f5da3e17-b46b-43c1-ac58-c70bceea634d": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 2,
+        "r": -3,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "b04b7247-7716-410b-b5b9-924125f6ee90": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 0,
+        "r": -1,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "5b5814fb-dd52-4d92-844b-004ed0689370": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": -1,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ebb64b08-d342-45d6-943d-0a3e5a58e124": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "14a1c39e-cb3d-495b-a827-57f2d46c5adf": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 4,
+        "r": -2,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "6a14356e-fc2a-4b42-aefd-9d706e63571d": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 0,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "e70a987c-6f6c-48c3-b908-1a2e7480536f": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": -3,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ed1e3582-553c-45a0-b99f-06560e46a703": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 0,
+        "r": 2,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "664b140a-b5c7-43dc-953d-d1dd4ec8468e": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": 0,
+        "s": -3,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "5797fd7a-9af3-4f08-83c2-8d1774d95ac3": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": -1,
+        "s": 2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "dea53d37-9373-4963-8852-1064d0658689": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 5,
+        "r": -2,
+        "s": -3,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "7459fda4-20ca-4f3a-a200-ffb630eeb5f0": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 1,
+        "r": 1,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "05061858-04cd-403c-a9f9-603cdf12c9c1": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 4,
+        "r": -4,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "f6094cfc-ce1a-485d-af50-0ed7350f54b6": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -2,
+        "r": 1,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      }
+    },
+    "offboard_pieces": {
+      "white": {
+        "Ant": 4
+      },
+      "black": {
+        "Ant": 3
+      }
+    },
+    "error": null
+  },
+  {
+    "event": "turn",
+    "turn_number": 25,
+    "bot_name": "BlackBot",
+    "team": "black",
+    "action_type": "place",
+    "piece_type": "ant",
+    "piece_id": "65105962-ce33-4ad8-abb2-3f8bbf4f1ec8",
+    "target": {
+      "q": -1,
+      "r": 3,
+      "s": -2
+    },
+    "board_state": {
+      "74871c2e-0b4d-42ed-927c-95beb3a86fd3": {
+        "type": "QueenBee",
+        "team": "white",
+        "icon": "\ud83d\udc1d",
+        "q": 2,
+        "r": -2,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51bf0a9b-4e94-486f-bdee-4b8724b73389": {
+        "type": "QueenBee",
+        "team": "black",
+        "icon": "\ud83d\udc1d",
+        "q": 0,
+        "r": 1,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51040e79-a395-4b13-bb20-9f0b016abbe8": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 1,
+        "r": 0,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "7a167e48-6f73-41b0-8345-2a8b698bf195": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 3,
+        "r": -2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "c960e9e5-0000-46a1-aceb-db70a435a78d": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 0,
+        "r": 0,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "f5da3e17-b46b-43c1-ac58-c70bceea634d": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 2,
+        "r": -3,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "b04b7247-7716-410b-b5b9-924125f6ee90": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 0,
+        "r": -1,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "5b5814fb-dd52-4d92-844b-004ed0689370": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": -1,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ebb64b08-d342-45d6-943d-0a3e5a58e124": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "14a1c39e-cb3d-495b-a827-57f2d46c5adf": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 4,
+        "r": -2,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "6a14356e-fc2a-4b42-aefd-9d706e63571d": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 0,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "e70a987c-6f6c-48c3-b908-1a2e7480536f": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": -3,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ed1e3582-553c-45a0-b99f-06560e46a703": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 0,
+        "r": 2,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "664b140a-b5c7-43dc-953d-d1dd4ec8468e": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": 0,
+        "s": -3,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "5797fd7a-9af3-4f08-83c2-8d1774d95ac3": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": -1,
+        "s": 2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "dea53d37-9373-4963-8852-1064d0658689": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 5,
+        "r": -2,
+        "s": -3,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "7459fda4-20ca-4f3a-a200-ffb630eeb5f0": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 1,
+        "r": 1,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "05061858-04cd-403c-a9f9-603cdf12c9c1": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 4,
+        "r": -4,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "f6094cfc-ce1a-485d-af50-0ed7350f54b6": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -2,
+        "r": 1,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ee687bd7-ae1a-4255-8360-f97a7e33290a": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 5,
+        "r": -3,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      }
+    },
+    "offboard_pieces": {
+      "white": {
+        "Ant": 3
+      },
+      "black": {
+        "Ant": 3
+      }
+    },
+    "error": null
+  },
+  {
+    "event": "turn",
+    "turn_number": 26,
+    "bot_name": "WhiteBot",
+    "team": "white",
+    "action_type": "place",
+    "piece_type": "ant",
+    "piece_id": "ddb3e606-b367-4c93-8fbd-3fd7860c3405",
+    "target": {
+      "q": 5,
+      "r": -4,
+      "s": -1
+    },
+    "board_state": {
+      "74871c2e-0b4d-42ed-927c-95beb3a86fd3": {
+        "type": "QueenBee",
+        "team": "white",
+        "icon": "\ud83d\udc1d",
+        "q": 2,
+        "r": -2,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51bf0a9b-4e94-486f-bdee-4b8724b73389": {
+        "type": "QueenBee",
+        "team": "black",
+        "icon": "\ud83d\udc1d",
+        "q": 0,
+        "r": 1,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51040e79-a395-4b13-bb20-9f0b016abbe8": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 1,
+        "r": 0,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "7a167e48-6f73-41b0-8345-2a8b698bf195": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 3,
+        "r": -2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "c960e9e5-0000-46a1-aceb-db70a435a78d": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 0,
+        "r": 0,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "f5da3e17-b46b-43c1-ac58-c70bceea634d": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 2,
+        "r": -3,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "b04b7247-7716-410b-b5b9-924125f6ee90": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 0,
+        "r": -1,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "5b5814fb-dd52-4d92-844b-004ed0689370": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": -1,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ebb64b08-d342-45d6-943d-0a3e5a58e124": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "14a1c39e-cb3d-495b-a827-57f2d46c5adf": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 4,
+        "r": -2,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "6a14356e-fc2a-4b42-aefd-9d706e63571d": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 0,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "e70a987c-6f6c-48c3-b908-1a2e7480536f": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": -3,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ed1e3582-553c-45a0-b99f-06560e46a703": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 0,
+        "r": 2,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "664b140a-b5c7-43dc-953d-d1dd4ec8468e": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": 0,
+        "s": -3,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "5797fd7a-9af3-4f08-83c2-8d1774d95ac3": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": -1,
+        "s": 2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "dea53d37-9373-4963-8852-1064d0658689": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 5,
+        "r": -2,
+        "s": -3,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "7459fda4-20ca-4f3a-a200-ffb630eeb5f0": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 1,
+        "r": 1,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "05061858-04cd-403c-a9f9-603cdf12c9c1": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 4,
+        "r": -4,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "f6094cfc-ce1a-485d-af50-0ed7350f54b6": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -2,
+        "r": 1,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ee687bd7-ae1a-4255-8360-f97a7e33290a": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 5,
+        "r": -3,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "65105962-ce33-4ad8-abb2-3f8bbf4f1ec8": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 3,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      }
+    },
+    "offboard_pieces": {
+      "white": {
+        "Ant": 3
+      },
+      "black": {
+        "Ant": 2
+      }
+    },
+    "error": null
+  },
+  {
+    "event": "turn",
+    "turn_number": 27,
+    "bot_name": "BlackBot",
+    "team": "black",
+    "action_type": "place",
+    "piece_type": "ant",
+    "piece_id": "8e42604f-a55a-40ba-8531-c996b55e4ae1",
+    "target": {
+      "q": -1,
+      "r": -2,
+      "s": 3
+    },
+    "board_state": {
+      "74871c2e-0b4d-42ed-927c-95beb3a86fd3": {
+        "type": "QueenBee",
+        "team": "white",
+        "icon": "\ud83d\udc1d",
+        "q": 2,
+        "r": -2,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51bf0a9b-4e94-486f-bdee-4b8724b73389": {
+        "type": "QueenBee",
+        "team": "black",
+        "icon": "\ud83d\udc1d",
+        "q": 0,
+        "r": 1,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51040e79-a395-4b13-bb20-9f0b016abbe8": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 1,
+        "r": 0,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "7a167e48-6f73-41b0-8345-2a8b698bf195": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 3,
+        "r": -2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "c960e9e5-0000-46a1-aceb-db70a435a78d": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 0,
+        "r": 0,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "f5da3e17-b46b-43c1-ac58-c70bceea634d": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 2,
+        "r": -3,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "b04b7247-7716-410b-b5b9-924125f6ee90": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 0,
+        "r": -1,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "5b5814fb-dd52-4d92-844b-004ed0689370": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": -1,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ebb64b08-d342-45d6-943d-0a3e5a58e124": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "14a1c39e-cb3d-495b-a827-57f2d46c5adf": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 4,
+        "r": -2,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "6a14356e-fc2a-4b42-aefd-9d706e63571d": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 0,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "e70a987c-6f6c-48c3-b908-1a2e7480536f": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": -3,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ed1e3582-553c-45a0-b99f-06560e46a703": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 0,
+        "r": 2,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "664b140a-b5c7-43dc-953d-d1dd4ec8468e": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": 0,
+        "s": -3,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "5797fd7a-9af3-4f08-83c2-8d1774d95ac3": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": -1,
+        "s": 2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "dea53d37-9373-4963-8852-1064d0658689": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 5,
+        "r": -2,
+        "s": -3,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "7459fda4-20ca-4f3a-a200-ffb630eeb5f0": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 1,
+        "r": 1,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "05061858-04cd-403c-a9f9-603cdf12c9c1": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 4,
+        "r": -4,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "f6094cfc-ce1a-485d-af50-0ed7350f54b6": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -2,
+        "r": 1,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ee687bd7-ae1a-4255-8360-f97a7e33290a": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 5,
+        "r": -3,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "65105962-ce33-4ad8-abb2-3f8bbf4f1ec8": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 3,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ddb3e606-b367-4c93-8fbd-3fd7860c3405": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 5,
+        "r": -4,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      }
+    },
+    "offboard_pieces": {
+      "white": {
+        "Ant": 2
+      },
+      "black": {
+        "Ant": 2
+      }
+    },
+    "error": null
+  },
+  {
+    "event": "turn",
+    "turn_number": 28,
+    "bot_name": "WhiteBot",
+    "team": "white",
+    "action_type": "place",
+    "piece_type": "ant",
+    "piece_id": "2e661392-82cd-4be2-9070-e0834134ea08",
+    "target": {
+      "q": 6,
+      "r": -2,
+      "s": -4
+    },
+    "board_state": {
+      "74871c2e-0b4d-42ed-927c-95beb3a86fd3": {
+        "type": "QueenBee",
+        "team": "white",
+        "icon": "\ud83d\udc1d",
+        "q": 2,
+        "r": -2,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51bf0a9b-4e94-486f-bdee-4b8724b73389": {
+        "type": "QueenBee",
+        "team": "black",
+        "icon": "\ud83d\udc1d",
+        "q": 0,
+        "r": 1,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51040e79-a395-4b13-bb20-9f0b016abbe8": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 1,
+        "r": 0,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "7a167e48-6f73-41b0-8345-2a8b698bf195": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 3,
+        "r": -2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "c960e9e5-0000-46a1-aceb-db70a435a78d": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 0,
+        "r": 0,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "f5da3e17-b46b-43c1-ac58-c70bceea634d": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 2,
+        "r": -3,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "b04b7247-7716-410b-b5b9-924125f6ee90": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 0,
+        "r": -1,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "5b5814fb-dd52-4d92-844b-004ed0689370": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": -1,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ebb64b08-d342-45d6-943d-0a3e5a58e124": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "14a1c39e-cb3d-495b-a827-57f2d46c5adf": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 4,
+        "r": -2,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "6a14356e-fc2a-4b42-aefd-9d706e63571d": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 0,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "e70a987c-6f6c-48c3-b908-1a2e7480536f": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": -3,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ed1e3582-553c-45a0-b99f-06560e46a703": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 0,
+        "r": 2,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "664b140a-b5c7-43dc-953d-d1dd4ec8468e": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": 0,
+        "s": -3,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "5797fd7a-9af3-4f08-83c2-8d1774d95ac3": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": -1,
+        "s": 2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "dea53d37-9373-4963-8852-1064d0658689": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 5,
+        "r": -2,
+        "s": -3,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "7459fda4-20ca-4f3a-a200-ffb630eeb5f0": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 1,
+        "r": 1,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "05061858-04cd-403c-a9f9-603cdf12c9c1": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 4,
+        "r": -4,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "f6094cfc-ce1a-485d-af50-0ed7350f54b6": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -2,
+        "r": 1,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ee687bd7-ae1a-4255-8360-f97a7e33290a": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 5,
+        "r": -3,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "65105962-ce33-4ad8-abb2-3f8bbf4f1ec8": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 3,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ddb3e606-b367-4c93-8fbd-3fd7860c3405": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 5,
+        "r": -4,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "8e42604f-a55a-40ba-8531-c996b55e4ae1": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": -2,
+        "s": 3,
+        "z_level": 0,
+        "is_pinned": false
+      }
+    },
+    "offboard_pieces": {
+      "white": {
+        "Ant": 2
+      },
+      "black": {
+        "Ant": 1
+      }
+    },
+    "error": null
+  },
+  {
+    "event": "turn",
+    "turn_number": 29,
+    "bot_name": "BlackBot",
+    "team": "black",
+    "action_type": "place",
+    "piece_type": "ant",
+    "piece_id": "fc6126cf-badd-4b4f-abcb-6504ee48a4ae",
+    "target": {
+      "q": -1,
+      "r": 1,
+      "s": 0
+    },
+    "board_state": {
+      "74871c2e-0b4d-42ed-927c-95beb3a86fd3": {
+        "type": "QueenBee",
+        "team": "white",
+        "icon": "\ud83d\udc1d",
+        "q": 2,
+        "r": -2,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51bf0a9b-4e94-486f-bdee-4b8724b73389": {
+        "type": "QueenBee",
+        "team": "black",
+        "icon": "\ud83d\udc1d",
+        "q": 0,
+        "r": 1,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "51040e79-a395-4b13-bb20-9f0b016abbe8": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 1,
+        "r": 0,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "7a167e48-6f73-41b0-8345-2a8b698bf195": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 3,
+        "r": -2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "c960e9e5-0000-46a1-aceb-db70a435a78d": {
+        "type": "Grasshopper",
+        "team": "black",
+        "icon": "\ud83e\udd97",
+        "q": 0,
+        "r": 0,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "f5da3e17-b46b-43c1-ac58-c70bceea634d": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 2,
+        "r": -3,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "b04b7247-7716-410b-b5b9-924125f6ee90": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 0,
+        "r": -1,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "5b5814fb-dd52-4d92-844b-004ed0689370": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": -1,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ebb64b08-d342-45d6-943d-0a3e5a58e124": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 2,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "14a1c39e-cb3d-495b-a827-57f2d46c5adf": {
+        "type": "Grasshopper",
+        "team": "white",
+        "icon": "\ud83e\udd97",
+        "q": 4,
+        "r": -2,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "6a14356e-fc2a-4b42-aefd-9d706e63571d": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 0,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "e70a987c-6f6c-48c3-b908-1a2e7480536f": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": -3,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ed1e3582-553c-45a0-b99f-06560e46a703": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 0,
+        "r": 2,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "664b140a-b5c7-43dc-953d-d1dd4ec8468e": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 3,
+        "r": 0,
+        "s": -3,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "5797fd7a-9af3-4f08-83c2-8d1774d95ac3": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": -1,
+        "s": 2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "dea53d37-9373-4963-8852-1064d0658689": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 5,
+        "r": -2,
+        "s": -3,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "7459fda4-20ca-4f3a-a200-ffb630eeb5f0": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": 1,
+        "r": 1,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "05061858-04cd-403c-a9f9-603cdf12c9c1": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 4,
+        "r": -4,
+        "s": 0,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "f6094cfc-ce1a-485d-af50-0ed7350f54b6": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -2,
+        "r": 1,
+        "s": 1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ee687bd7-ae1a-4255-8360-f97a7e33290a": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 5,
+        "r": -3,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "65105962-ce33-4ad8-abb2-3f8bbf4f1ec8": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": 3,
+        "s": -2,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "ddb3e606-b367-4c93-8fbd-3fd7860c3405": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 5,
+        "r": -4,
+        "s": -1,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "8e42604f-a55a-40ba-8531-c996b55e4ae1": {
+        "type": "Ant",
+        "team": "black",
+        "icon": "\ud83d\udc1c",
+        "q": -1,
+        "r": -2,
+        "s": 3,
+        "z_level": 0,
+        "is_pinned": false
+      },
+      "2e661392-82cd-4be2-9070-e0834134ea08": {
+        "type": "Ant",
+        "team": "white",
+        "icon": "\ud83d\udc1c",
+        "q": 6,
+        "r": -2,
+        "s": -4,
+        "z_level": 0,
+        "is_pinned": false
+      }
+    },
+    "offboard_pieces": {
+      "white": {
+        "Ant": 1
+      },
+      "black": {
+        "Ant": 1
+      }
+    },
+    "error": null
+  },
+  {
+    "event": "game_end",
+    "timestamp": "2025-10-30T23:35:53.160465",
+    "winner": "white",
+    "total_turns": 30,
+    "duration_seconds": 0.07886,
+    "reason": "normal"
+  }
+]
