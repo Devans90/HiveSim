@@ -217,19 +217,44 @@ class Beetle(GamePiece):
         if self.is_pinned():
             return []
         
+        # Check if removing this beetle would break the hive
+        # Beetles on top of stacks (z_level > 0) can always move without breaking the hive
+        if self.z_level == 0 and not MovementHelper.hive_stays_connected(self.piece_id, game_state):
+            return []
+        
         valid_moves = []
-        occupied = MovementHelper.get_occupied_spaces(game_state, exclude_piece_id=self.piece_id, ground_level_only=False)
+        # Get occupied spaces at ground level only (since beetle needs to stay connected to hive)
+        occupied = MovementHelper.get_occupied_spaces(game_state, exclude_piece_id=self.piece_id, ground_level_only=True)
 
         for adj in self.hex_coordinates.get_adjacent_hexes():
             adj_coords = (adj.q, adj.r, adj.s)
-            if adj_coords in occupied:
-                valid_moves.append(adj) # can climb on top of other pieces
+            
+            # Check if there's a piece at ground level OR any piece at this location (for climbing)
+            has_ground_piece = adj_coords in occupied
+            has_any_piece = any(
+                p.hex_coordinates and 
+                (p.hex_coordinates.q, p.hex_coordinates.r, p.hex_coordinates.s) == adj_coords and
+                p.location == 'board'
+                for p in game_state.all_pieces.values()
+                if p.piece_id != self.piece_id
+            )
+            
+            if has_any_piece:
+                # Can climb on top of other pieces
+                valid_moves.append(adj)
             else:
-                # check freedom of movement for sliding onto empty hex
-                if game_state.check_freedom_of_movement(self.hex_coordinates, adj, self.piece_id):
+                # Moving to empty space - must maintain hive connectivity
+                # Check if the destination would be adjacent to the hive
+                has_neighbor = any(
+                    (n.q, n.r, n.s) in occupied
+                    for n in adj.get_adjacent_hexes()
+                )
+                
+                if has_neighbor and game_state.check_freedom_of_movement(self.hex_coordinates, adj, self.piece_id):
                     valid_moves.append(adj)
 
         return valid_moves
+
 
     def can_move_to(self, target: HexCoordinate, game_state) -> bool:
         valid_moves = self.get_valid_moves(game_state)
@@ -316,6 +341,14 @@ class QueenBee(GamePiece):
 
             # check freedom of movement
             if not game_state.check_freedom_of_movement(self.hex_coordinates, adj, self.piece_id):
+                continue
+
+            # check hive integrity
+            has_neighbor = any(
+            (n.q, n.r, n.s) in occupied
+            for n in adj.get_adjacent_hexes()
+        )
+            if not has_neighbor:
                 continue
 
             # # check hive integrity

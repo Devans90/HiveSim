@@ -34,15 +34,20 @@ def simulate_game(white_bot, black_bot, verbose=False, plot_game: bool = False, 
         # Get bot's move
         turn = current_bot.get_move(game.game_state)
 
+        # Track origin coordinates BEFORE applying the move
+        origin_coord = None
+        if turn.action_type == "move" and turn.piece_id:
+            piece = game.game_state.all_pieces.get(turn.piece_id)
+            if piece and piece.hex_coordinates:
+                origin_coord = piece.hex_coordinates
+
         if verbose:
             print(f"\nTurn {turn_num}: {current_bot.name} ({current_bot.team})")
             print(f"  Action: {turn.action_type}")
             if turn.piece_type:
                 print(f"  Piece: {turn.piece_type}")
-            if turn.piece_id and turn.action_type == "move":
-                piece = game.game_state.all_pieces.get(turn.piece_id)
-                if piece and piece.hex_coordinates:
-                    print(f"  From: ({piece.hex_coordinates.q}, {piece.hex_coordinates.r}, {piece.hex_coordinates.s})")
+            if origin_coord:
+                print(f"  From: ({origin_coord.q}, {origin_coord.r}, {origin_coord.s})")
             if turn.target_coordinates:
                 print(f"  Target: ({turn.target_coordinates.q}, {turn.target_coordinates.r}, {turn.target_coordinates.s})")
 
@@ -66,11 +71,22 @@ def simulate_game(white_bot, black_bot, verbose=False, plot_game: bool = False, 
 
         # Live visualization
         if plot_game:
+            # Prepare last_move tuple for visualization
+            last_move = None
+            if turn.action_type == "move" and origin_coord and turn.target_coordinates:
+                last_move = (origin_coord, turn.target_coordinates, current_bot.team)
+            elif turn.action_type == "place" and turn.target_coordinates:
+                # For placements, you could show an arrow from off-board or just not show an arrow
+                # Here we'll just not show an arrow for placements
+                last_move = None
+            
             visualize_game_board(
                 game.game_state.board_state,
                 show_empty_hexes=game.game_state.get_available_spaces(),
+                turn_number=turn_num + 1,
+                last_move=last_move,
             )
-            time.sleep(live_delay)  # small delay to see each frame
+            time.sleep(live_delay)
 
         # Check for a winner
         winner = game.game_state.check_win_condition()
@@ -96,5 +112,3 @@ white = RandomBot(team="white")
 black = RandomBot(team="black")
 
 _, max_turns, game = simulate_game(white, black, verbose=True, plot_game=True)
-
-# visualize_game_board(game.game_state.board_state, show_empty_hexes=game.game_state.get_available_spaces())

@@ -16,7 +16,8 @@ def get_hexagon_vertices(x: float, y: float, size: float = 1.0):
     return x + size * np.cos(angles), y + size * np.sin(angles)
 
 def visualize_game_board(board_state: BoardState, show_empty_hexes: Optional[List[HexCoordinate]] = None, 
-                        show_coordinates: bool = True, delay: float = 0.5, turn_number: int = 0):
+                        show_coordinates: bool = True, delay: float = 0.5, turn_number: int = 0,
+                        last_move: Optional[tuple[HexCoordinate, HexCoordinate, str]] = None):
     """Render and refresh a persistent game board in the browser."""
     fig = go.Figure()
     hex_size = 0.95
@@ -25,17 +26,7 @@ def visualize_game_board(board_state: BoardState, show_empty_hexes: Optional[Lis
     team_colors = {"black": "#1D1A1A", "white": "#FFFFFF"}
     team_border_colors = {"black": "#000000", "white": "#808080"}
 
-    # Draw empty hexes
-    if show_empty_hexes:
-        for coord in show_empty_hexes:
-            x, y = hex_to_pixel(coord)
-            hx, hy = get_hexagon_vertices(x, y, hex_size)
-            fig.add_trace(go.Scatter(x=hx, y=hy, fill='toself', fillcolor='#F5F5F5',
-                                     line=dict(color='lightgray', width=1),
-                                     mode='lines', showlegend=False,
-                                     hovertemplate=f'Empty<br>{coord}<extra></extra>'))
-
-    # Group pieces by their base coordinates to handle stacks
+    # Group pieces by their base coordinates to handle stacks (ONLY ONCE!)
     coord_to_pieces = {}
     for piece_id, piece in board_state.pieces.items():
         if not piece.hex_coordinates or piece.location != 'board':
@@ -49,6 +40,38 @@ def visualize_game_board(board_state: BoardState, show_empty_hexes: Optional[Lis
     for coord_tuple in coord_to_pieces:
         coord_to_pieces[coord_tuple].sort(key=lambda x: x[0])
 
+    # Create set of occupied coordinates for filtering
+    occupied_coords = set(coord_to_pieces.keys())
+    
+    # Draw empty hexes FIRST, but only for truly empty spaces
+    if show_empty_hexes:
+        empty_count = 0
+        for coord in show_empty_hexes:
+            coord_tuple = (coord.q, coord.r, coord.s)
+            
+            # DEBUG: Check each coordinate
+            if coord_tuple in occupied_coords:
+                print(f"DEBUG: Skipping occupied {coord_tuple}")
+                continue
+            
+            empty_count += 1
+            x, y = hex_to_pixel(coord)
+            hx, hy = get_hexagon_vertices(x, y, hex_size)
+            fig.add_trace(go.Scatter(x=hx, y=hy, fill='toself', fillcolor='#F5F5F5',
+                                     line=dict(color='lightgray', width=2, dash='dot'),
+                                     mode='lines', showlegend=False,
+                                     hovertemplate=f'Empty<br>{coord}<extra></extra>'))
+            coord_text = f'({coord.q},{coord.r},{coord.s})'
+            fig.add_trace(go.Scatter(
+                x=[x],
+                y=[y - 0.35],  # Below center
+                mode='text',
+                text=[coord_text],
+                textfont=dict(size=10, color='gray'),  # Gray color for empty hexes
+                showlegend=False,
+                hoverinfo='skip'
+            ))
+        
     # Draw pieces (handling stacks)
     for coord_tuple, stack in coord_to_pieces.items():
         coord = HexCoordinate(q=coord_tuple[0], r=coord_tuple[1], s=coord_tuple[2])
@@ -125,6 +148,34 @@ def visualize_game_board(board_state: BoardState, show_empty_hexes: Optional[Lis
                 showlegend=False,
                 hoverinfo='skip'
             ))
+
+        # Draw arrow for last move
+
+    # Draw arrow for last move
+    if last_move:
+        origin, destination, team = last_move
+        x_start, y_start = hex_to_pixel(origin)
+        x_end, y_end = hex_to_pixel(destination)
+        
+        arrow_color = team_border_colors.get(team, 'gray')
+        
+        # Draw the arrow line
+        fig.add_annotation(
+            x=x_end,
+            y=y_end,
+            ax=x_start,
+            ay=y_start,
+            xref='x',
+            yref='y',
+            axref='x',
+            ayref='y',
+            showarrow=True,
+            arrowhead=2,
+            arrowsize=2,
+            arrowwidth=4,
+            arrowcolor=arrow_color,
+            opacity=0.7
+        )
 
     fig.update_layout(
         title=f'Hive - Game Board (Turn {turn_number})',
