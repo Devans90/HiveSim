@@ -217,10 +217,17 @@ class Beetle(GamePiece):
         if self.is_pinned():
             return []
         
-        # Check if removing this beetle would break the hive
-        # Beetles on top of stacks (z_level > 0) can always move without breaking the hive
-        if self.z_level == 0 and not MovementHelper.hive_stays_connected(self.piece_id, game_state):
-            return []
+        # Check if moving this piece would break the hive
+        if not MovementHelper.hive_stays_connected(self.piece_id, game_state):
+            # If beetle can't move without breaking hive, it can still climb
+            # on adjacent pieces (since climbing doesn't remove it from hive)
+            valid_moves = []
+            occupied = MovementHelper.get_occupied_spaces(game_state, exclude_piece_id=self.piece_id, ground_level_only=False)
+            for adj in self.hex_coordinates.get_adjacent_hexes():
+                adj_coords = (adj.q, adj.r, adj.s)
+                if adj_coords in occupied:
+                    valid_moves.append(adj) # can climb on top of other pieces
+            return valid_moves
         
         valid_moves = []
         # Get occupied spaces at ground level only (since beetle needs to stay connected to hive)
@@ -277,6 +284,10 @@ class Grasshopper(GamePiece):
             return []
 
         if self.is_pinned():
+            return []
+
+        # Check if moving this piece would break the hive
+        if not MovementHelper.hive_stays_connected(self.piece_id, game_state):
             return []
 
         valid_moves = []
