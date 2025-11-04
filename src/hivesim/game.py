@@ -391,6 +391,16 @@ class Ladybug(GamePiece):
             icon="🐞",
             location='offboard'
             )
+    
+    def get_valid_moves(self, game_state) -> List[HexCoordinate]:
+        """Return valid moves for Ladybug."""
+        # TODO: Implement Ladybug movement rules
+        return []
+    
+    def can_move_to(self, target: HexCoordinate, game_state) -> bool:
+        """Check if Ladybug can move to target."""
+        valid_moves = self.get_valid_moves(game_state)
+        return target in valid_moves
 
 class Mosquito(GamePiece):
     def __init__(self, hex_coordinates=None, team: str = 'white'):
@@ -400,6 +410,16 @@ class Mosquito(GamePiece):
             icon="🦟",
             location='offboard'
             )
+    
+    def get_valid_moves(self, game_state) -> List[HexCoordinate]:
+        """Return valid moves for Mosquito."""
+        # TODO: Implement Mosquito movement rules (mimics adjacent pieces)
+        return []
+    
+    def can_move_to(self, target: HexCoordinate, game_state) -> bool:
+        """Check if Mosquito can move to target."""
+        valid_moves = self.get_valid_moves(game_state)
+        return target in valid_moves
 
 class MovementHelper:
 
@@ -821,6 +841,14 @@ class GameState(BaseModel):
         if path is not None:
             return True
         return False
+    
+    def are_hexes_adjacent(self, hex1: HexCoordinate, hex2: HexCoordinate) -> bool:
+        """Check if two hexes are adjacent to each other."""
+        return MovementHelper.are_hexes_adjacent(hex1, hex2)
+    
+    def get_path(self, start: HexCoordinate, end: HexCoordinate, piece_id: str) -> Optional[List[HexCoordinate]]:
+        """Get path from start to end for a piece."""
+        return MovementHelper.get_path(self, start, end, piece_id)
 
     @model_validator(mode='after')
     def validate_current_team(self):
@@ -849,7 +877,7 @@ class Turn(BaseModel):
             raise ValueError('Cannot move opponent piece')
         
         if piece.location != 'board':
-            raise ValueError('Can only move pieces on the board')
+            raise ValueError('Can only move pieces that are on the board')
         
         if piece.is_pinned():
             raise ValueError(f'{piece.__class__.__name__} is pinned and cannot move')
@@ -979,6 +1007,11 @@ class Turn(BaseModel):
             raise ValueError(f'{turn.player.capitalize()} failed to place Queen by turn 4')
     
         return turn
+
+    @staticmethod
+    def hive_stays_connected(piece_id: str, game_state) -> bool:
+        """Check if removing a piece would keep the hive connected."""
+        return MovementHelper.hive_stays_connected(piece_id, game_state)
 
 class Game(BaseModel):
     game_state: GameState = Field(default_factory=GameState)
