@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from typing import Dict
 import heapq
 from typing import Set, Tuple
@@ -33,6 +34,24 @@ class GamePiece(BaseModel):
     team: str
     piece_id: int = Field(default_factory=lambda: str(uuid.uuid4()))
     location: str = Field(default='offboard') # 'offboard', 'board', 'stacked'
+    z_level: int = Field(default=0) # for stacked pieces like beetles
+    pieces_below: List[str] = Field(default_factory=list) # piece_ids of pieces below 
+    pieces_above: List[str] = Field(default_factory=list) # piece_ids of pieces above 
+
+    def is_pinned(self) -> bool:
+        """Check if this has a bug hat"""
+        return len(self.pieces_above) > 0
+    
+    def get_top_piece(self, game_state) -> 'GamePiece':
+        """Get the top piece in the stack."""
+        if not self.is_pinned():
+            return self
+        
+        top_piece_id = self.pieces_above[-1]
+        top_piece = game_state.all_pieces.get(top_piece_id)
+        if top_piece:
+            return top_piece.get_top_piece(game_state) # fallback here if somehow the above chain is broken, this may cause headaches...
+        return self
 
     @field_validator('team')
     @classmethod
@@ -40,6 +59,20 @@ class GamePiece(BaseModel):
         if v not in ['black', 'white']:
             raise ValueError('Team must be either "black" or "white"')
         return v
+    
+    @abstractmethod
+    def get_valid_moves(self, game_state) -> List[HexCoordinate]:
+        """Return a list of valid moves for this piece given the current game state."""
+        pass
+
+    @abstractmethod
+    def can_move_to(self, target: HexCoordinate, game_state) -> bool:
+        """Return whether this specific piece type can move to the target hex coordinate."""
+        pass
+
+    def get_movement_range(self) -> int:
+        """Return the movement range of this piece type. default if not overridden is unlimited such as ant"""
+        pass
 
 class Spider(GamePiece):
     def __init__(self, hex_coordinates=None, team: str = 'white'):
@@ -49,7 +82,73 @@ class Spider(GamePiece):
             icon="🕷️",
             location='offboard'
             )
+    
+    def get_valid_moves(self, game_state):
+        if self.location != 'board':
+            return []
+        if self.is_pinned():
+            return []
+        # cannot move if removing this piece would break the hive
+        if not MovementHelper.hive_stays_connected(self.piece_id, game_state):
+            return []
 
+        start = self.hex_coordinates
+        occupied = MovementHelper.get_occupied_spaces(game_state, exclude_piece_id=self.piece_id)
+
+        results = set()
+
+        def has_neighbor(coord: HexCoordinate) -> bool:
+            for n in coord.get_adjacent_hexes():
+                if (n.q, n.r, n.s) in occupied:
+                    return True
+            return False
+
+        def dfs(current: HexCoordinate, depth: int, visited: Set[Tuple[int,int,int]]):
+            # depth counts how many steps taken so far
+            if depth == 3:
+                # don't include starting square
+                if (current.q, current.r, current.s) != (start.q, start.r, start.s):
+                    results.add((current.q, current.r, current.s))
+                return
+
+            for adj in current.get_adjacent_hexes():
+                coords = (adj.q, adj.r, adj.s)
+
+                # can't move into occupied space
+                if coords in occupied:
+                    continue
+
+                # cannot revisit same hex in same spider path
+                if coords in visited:
+                    continue
+
+                # must be able to physically slide into the adjacent hex
+                try:
+                    if not MovementHelper.can_slide_to_adjacent(current, adj, occupied):
+                        continue
+                except ValueError:
+                    # non-adjacent input to helper -- skip
+                    continue
+
+                # intermediate and final positions must be adjacent to hive (have at least one neighbor)
+                if not has_neighbor(adj):
+                    continue
+
+                visited.add(coords)
+                dfs(adj, depth + 1, visited)
+                visited.remove(coords)
+
+        visited = {(start.q, start.r, start.s)}
+        dfs(start, 0, visited)
+
+        return [HexCoordinate(q=q, r=r, s=s) for (q, r, s) in results]
+    def can_move_to(self, target: HexCoordinate, game_state) -> bool:
+        valid_moves = self.get_valid_moves(game_state)
+        for move in valid_moves:
+            if move.q == target.q and move.r == target.r and move.s == target.s: # check the move is in valid moves
+                return True
+        return False
+    
 class Ant(GamePiece):
     def __init__(self, hex_coordinates=None, team: str = 'white'):
         super().__init__(
@@ -58,7 +157,51 @@ class Ant(GamePiece):
             icon="🐜",
             location='offboard'
             )
+    def get_valid_moves(self, game_state):
+        if self.location != 'board':
+            return []
+        
+        if self.is_pinned():
+            return []
+        
+        # is this a key ant holding the hive together?
+        if not MovementHelper.hive_stays_connected(self.piece_id, game_state):
+            return []
 
+        # BFS to find all positions the ant can slide to
+        visited = set()
+        queue = [self.hex_coordinates]
+        visited.add((self.hex_coordinates.q, self.hex_coordinates.r, self.hex_coordinates.s))
+        valid_moves = []
+
+        occupied = MovementHelper.get_occupied_spaces(game_state, exclude_piece_id=self.piece_id)
+
+        while queue:
+            current = queue.pop(0)
+            
+            # Get all valid slides from this position
+            for next_hex in game_state.get_valid_slide_positions(current, occupied):
+                hex_tuple = (next_hex.q, next_hex.r, next_hex.s)
+                
+                if hex_tuple not in visited:
+                    visited.add(hex_tuple)
+                    
+                    # Don't include starting position
+                    if hex_tuple != (self.hex_coordinates.q, self.hex_coordinates.r, self.hex_coordinates.s):
+                        valid_moves.append(next_hex)
+                    
+                    # Continue searching from here
+                    queue.append(next_hex)
+        
+        return valid_moves
+
+    def can_move_to(self, target: HexCoordinate, game_state) -> bool:
+        valid_moves = self.get_valid_moves(game_state)
+        for move in valid_moves:
+            if move.q == target.q and move.r == target.r and move.s == target.s: # check the move is in valid moves
+                return True
+        return False
+    
 class Beetle(GamePiece):
     def __init__(self, hex_coordinates=None, team: str = 'white'):
         super().__init__(
@@ -67,6 +210,65 @@ class Beetle(GamePiece):
             icon="🪲",
             location='offboard'
             )
+    def get_valid_moves(self, game_state):
+        if self.location != 'board':
+            return []
+        
+        if self.is_pinned():
+            return []
+        
+        # Check if moving this piece would break the hive
+        if not MovementHelper.hive_stays_connected(self.piece_id, game_state):
+            # If beetle can't move without breaking hive, it can still climb
+            # on adjacent pieces (since climbing doesn't remove it from hive)
+            valid_moves = []
+            occupied = MovementHelper.get_occupied_spaces(game_state, exclude_piece_id=self.piece_id, ground_level_only=False)
+            for adj in self.hex_coordinates.get_adjacent_hexes():
+                adj_coords = (adj.q, adj.r, adj.s)
+                if adj_coords in occupied:
+                    valid_moves.append(adj) # can climb on top of other pieces
+            return valid_moves
+        
+        valid_moves = []
+        # Get occupied spaces at ground level only (since beetle needs to stay connected to hive)
+        occupied = MovementHelper.get_occupied_spaces(game_state, exclude_piece_id=self.piece_id, ground_level_only=True)
+
+        for adj in self.hex_coordinates.get_adjacent_hexes():
+            adj_coords = (adj.q, adj.r, adj.s)
+            
+            # Check if there's a piece at ground level OR any piece at this location (for climbing)
+            has_ground_piece = adj_coords in occupied
+            has_any_piece = any(
+                p.hex_coordinates and 
+                (p.hex_coordinates.q, p.hex_coordinates.r, p.hex_coordinates.s) == adj_coords and
+                p.location == 'board'
+                for p in game_state.all_pieces.values()
+                if p.piece_id != self.piece_id
+            )
+            
+            if has_any_piece:
+                # Can climb on top of other pieces
+                valid_moves.append(adj)
+            else:
+                # Moving to empty space - must maintain hive connectivity
+                # Check if the destination would be adjacent to the hive
+                has_neighbor = any(
+                    (n.q, n.r, n.s) in occupied
+                    for n in adj.get_adjacent_hexes()
+                )
+                
+                if has_neighbor and game_state.check_freedom_of_movement(self.hex_coordinates, adj, self.piece_id):
+                    valid_moves.append(adj)
+
+        return valid_moves
+
+
+    def can_move_to(self, target: HexCoordinate, game_state) -> bool:
+        valid_moves = self.get_valid_moves(game_state)
+        for move in valid_moves:
+            if move.q == target.q and move.r == target.r and move.s == target.s: # check the move is in valid moves
+                return True
+        return False
 
 class Grasshopper(GamePiece):
     def __init__(self, hex_coordinates=None, team: str = 'white'):
@@ -76,6 +278,49 @@ class Grasshopper(GamePiece):
             icon="🦗",
             location='offboard'
             )
+    
+    def get_valid_moves(self, game_state):
+        if self.location != 'board':
+            return []
+
+        if self.is_pinned():
+            return []
+
+        # Check if moving this piece would break the hive
+        if not MovementHelper.hive_stays_connected(self.piece_id, game_state):
+            return []
+
+        valid_moves = []
+        directions = [(1, -1, 0), (1, 0, -1), (0, 1, -1), (-1, 1, 0), (-1, 0, 1), (0, -1, 1)]
+        occupied = MovementHelper.get_occupied_spaces(game_state, exclude_piece_id=self.piece_id)
+
+        for dq, dr, ds in directions:
+            next_hex = HexCoordinate(
+                q=self.hex_coordinates.q + dq,
+                r=self.hex_coordinates.r + dr,
+                s=self.hex_coordinates.s + ds
+            )
+            jumped = False
+
+            while (next_hex.q, next_hex.r, next_hex.s) in occupied:
+                jumped = True
+                next_hex = HexCoordinate(
+                    q=next_hex.q + dq,
+                    r=next_hex.r + dr,
+                    s=next_hex.s + ds
+                )
+
+            if jumped:
+                valid_moves.append(next_hex)
+
+        return valid_moves
+
+    def can_move_to(self, target: HexCoordinate, game_state) -> bool:
+        valid_moves = self.get_valid_moves(game_state)
+        for move in valid_moves:
+            if move.q == target.q and move.r == target.r and move.s == target.s: # check the move is in valid moves
+                return True
+        return False
 
 class QueenBee(GamePiece):
     def __init__(self, hex_coordinates=None, team: str = 'white'):
@@ -85,7 +330,59 @@ class QueenBee(GamePiece):
             icon="🐝",
             location='offboard'
             )
+    def get_valid_moves(self, game_state) -> List[HexCoordinate]:
+        if self.location != 'board':
+            return []
 
+        if self.is_pinned():
+            return []
+
+        if not MovementHelper.hive_stays_connected(self.piece_id, game_state):
+            return [] # cannot move if it breaks the hive
+        
+        # queen can move one space to any adjacent unoccupied hex that 
+        # maintains hive integrity and freedom of movement
+        occupied = MovementHelper.get_occupied_spaces(game_state, exclude_piece_id=self.piece_id)
+        valid_moves = []
+
+        for adj in self.hex_coordinates.get_adjacent_hexes():
+            adj_coords = (adj.q, adj.r, adj.s)
+            if adj_coords in occupied:
+                continue # occupied
+
+            # check freedom of movement
+            if not game_state.check_freedom_of_movement(self.hex_coordinates, adj, self.piece_id):
+                continue
+
+            # check hive integrity
+            has_neighbor = any(
+            (n.q, n.r, n.s) in occupied
+            for n in adj.get_adjacent_hexes()
+        )
+            if not has_neighbor:
+                continue
+
+            # # check hive integrity
+            # original_coords = self.hex_coordinates
+            # self.hex_coordinates = adj
+            # if not MovementHelper.hive_stays_connected(self.piece_id, game_state):
+            #     self.hex_coordinates = original_coords
+            #     continue
+            # self.hex_coordinates = original_coords
+
+            valid_moves.append(adj)
+        return valid_moves
+
+    def can_move_to(self, target: HexCoordinate, game_state) -> bool:
+        valid_moves = self.get_valid_moves(game_state)
+        for move in valid_moves:
+            if move.q == target.q and move.r == target.r and move.s == target.s: # check the move is in valid moves
+                return True
+        return False
+
+    def get_movement_range(self) -> int:
+        return 1 # though i dont think this is needed anywhere
+    
 class Ladybug(GamePiece):
     def __init__(self, hex_coordinates=None, team: str = 'white'):
         super().__init__(
@@ -104,20 +401,203 @@ class Mosquito(GamePiece):
             location='offboard'
             )
 
+class MovementHelper:
+
+    @staticmethod
+    def are_hexes_adjacent(hex1: HexCoordinate, hex2: HexCoordinate) -> bool:
+        """Check if two hexes are adjacent to each other."""
+        # Manhattan distance of 2
+        distance = abs(hex1.q - hex2.q) + abs(hex1.r - hex2.r) + abs(hex1.s - hex2.s)
+        return distance == 2
+
+    @staticmethod
+    def get_path(game_state: 'GameState', start: HexCoordinate, end: HexCoordinate, piece_id: str) -> Optional[List[HexCoordinate]]:
+
+        def heuristic(a: HexCoordinate, b: HexCoordinate) -> int:
+            # Manhattan distance in hex coordinates
+            return (abs(a.q - b.q) + abs(a.r - b.r) + abs(a.s - b.s)) // 2
+        
+        # Priority queue: (f_score, counter, current_hex, path)
+        # counter is used to break ties in f_score
+        counter = 0
+        open_set = []
+        heapq.heappush(open_set, (heuristic(start, end), counter, start, [start]))
+        
+        # Track visited nodes to avoid cycles
+        visited = set()
+        visited.add((start.q, start.r, start.s))
+        
+        # Get all occupied spaces except the moving piece
+        occupied = set()
+        for pid, piece in game_state.board_state.pieces.items():
+            if pid != piece_id and piece.location == 'board':
+                occupied.add((piece.hex_coordinates.q, piece.hex_coordinates.r, piece.hex_coordinates.s))
+        
+        while open_set:
+            _, _, current, path = heapq.heappop(open_set)
+            
+            # Check if we reached the goal
+            if current.q == end.q and current.r == end.r and current.s == end.s:
+                return path
+            
+            # Explore neighbors
+            for next_hex in game_state.get_valid_slide_positions(current, occupied):
+                next_coords = (next_hex.q, next_hex.r, next_hex.s)
+                
+                if next_coords not in visited:
+                    visited.add(next_coords)
+                    g_score = len(path)  # Cost from start to current
+                    h_score = heuristic(next_hex, end)  # Heuristic cost to goal
+                    f_score = g_score + h_score
+                    
+                    counter += 1
+                    new_path = path + [next_hex]
+                    heapq.heappush(open_set, (f_score, counter, next_hex, new_path))
+        
+        return None 
+    
+    @staticmethod
+    def get_occupied_spaces(game_state: 'GameState', exclude_piece_id: Optional[str] = None, ground_level_only: bool = True) -> Set[Tuple[int, int, int]]:
+        """Get all occupied spaces on the board, optionally excluding a specific piece."""
+        occupied = set()
+        for pid, piece in game_state.board_state.pieces.items():
+            if pid != exclude_piece_id and piece.location == 'board':
+                if ground_level_only or piece.z_level == 0:
+                    occupied.add((piece.hex_coordinates.q, piece.hex_coordinates.r, piece.hex_coordinates.s))
+        return occupied
+    
+    @staticmethod
+    def can_slide_to_adjacent(from_hex: HexCoordinate, to_hex: HexCoordinate, occupied: Set) -> bool:
+        """Check if piece can slide one space (for Queen, Spider, Ant)."""
+
+        # double check path is adjacent
+        if not MovementHelper.are_hexes_adjacent(from_hex, to_hex):
+            raise ValueError('Hexes are not adjacent')
+
+        # neighbors
+        from_neighbors = set([(h.q, h.r, h.s) for h in from_hex.get_adjacent_hexes()])
+        to_neighbors = set([(h.q, h.r, h.s) for h in to_hex.get_adjacent_hexes()])
+
+        mutual_neighbors = from_neighbors.intersection(to_neighbors)
+        occupied_mutual = mutual_neighbors.intersection(occupied)
+
+        if len(occupied_mutual) >= 2:
+            return False # cannot slide through tight gap
+        
+        return True
+
+    
+    @staticmethod
+    def get_slide_path(start: HexCoordinate, end: HexCoordinate, game_state: 'GameState', piece_id: str) -> Optional[List[HexCoordinate]]:
+        """Find a sliding path around the hive."""
+        return MovementHelper.get_path(game_state, start, end, piece_id)
+    
+    @staticmethod
+    def hive_stays_connected(piece_id: str, game_state: 'GameState') -> bool:
+        """Check if the hive stays connected after a piece is moved."""
+        # BFS or DFS to check if all pieces are still connected without the piece being moved
+
+        # get all pieces on board except the one being moved
+        pieces_on_board = {}
+        coord_to_pid = {}
+        
+        for pid, piece in game_state.board_state.pieces.items():
+            if piece.location != 'board':
+                continue
+
+            if pid == piece_id:
+                continue
+            
+            pieces_on_board[pid] = piece
+            coords = (piece.hex_coordinates.q, piece.hex_coordinates.r, piece.hex_coordinates.s)
+            coord_to_pid[coords] = pid
+        
+        if len(pieces_on_board) <= 1:
+            return True  # Can't break a hive of 2 pieces
+        
+        # BFS to check connectivity
+        start_id = next(iter(pieces_on_board.keys()))
+        visited = {start_id}
+        queue = [start_id]
+        
+        while queue:
+            current_id = queue.pop(0)
+            current_piece = pieces_on_board[current_id]
+            
+            # Check all adjacent hexes
+            for adj_hex in current_piece.hex_coordinates.get_adjacent_hexes():
+                adj_coords = (adj_hex.q, adj_hex.r, adj_hex.s)
+                
+                if adj_coords in coord_to_pid:
+                    adj_pid = coord_to_pid[adj_coords]
+                    if adj_pid not in visited:
+                        visited.add(adj_pid)
+                        queue.append(adj_pid)
+        
+        # Hive is connected if we visited all pieces
+        return len(visited) == len(pieces_on_board) # ie if we visited every piece, hive is intact
+
 class BoardState(BaseModel):
     pieces: dict = Field(default_factory=dict)
+    stacks: Dict[Tuple[int, int, int], List[str]] = Field(default_factory=dict) # key is hex coords, value is list of piece_ids in stack order
 
     def add_piece(self, piece_id: str, piece: GamePiece, coordinates: HexCoordinate):
-        piece.hex_coordinates = coordinates
-        piece.location = 'board'
+
+        coords_tuple = (coordinates.q, coordinates.r, coordinates.s)
+
+        if coords_tuple in self.stacks:
+            bottom_piece_id = self.stacks[coords_tuple][-1]
+            bottom_piece = self.pieces[bottom_piece_id]
+
+            piece.hex_coordinates = coordinates
+            piece.location = 'board'
+            piece.z_level = len(self.stacks[coords_tuple])
+            piece.pieces_below = self.stacks[coords_tuple].copy()
+
+            bottom_piece.pieces_above.append(piece_id)
+            self.stacks[coords_tuple].append(piece_id)
+        else:
+            piece.hex_coordinates = coordinates
+            piece.location = 'board'
+            piece.z_level = 0
+            piece.pieces_below = []
+            self.stacks[coords_tuple] = [piece_id]
+
         self.pieces[piece_id] = piece
 
     def move_piece(self, piece_id: str, piece: GamePiece, new_coordinates: HexCoordinate):
-        piece.hex_coordinates = new_coordinates
-        self.pieces[piece_id] = piece
-
-        # Note: This does not handle stacking logic for Beetles or other pieces.
-        # TODO maybe some cool animation here
+        old_coords = (piece.hex_coordinates.q, piece.hex_coordinates.r, piece.hex_coordinates.s)
+        new_coords = (new_coordinates.q, new_coordinates.r, new_coordinates.s)
+        
+        # Remove from old stack
+        if old_coords in self.stacks:
+            self.stacks[old_coords].remove(piece_id)
+            if not self.stacks[old_coords]:
+                del self.stacks[old_coords]
+            
+            # Update pieces that were above/below
+            for pid in piece.pieces_below:
+                below_piece = self.pieces.get(pid)
+                if below_piece:
+                    below_piece.pieces_above.remove(piece_id)
+            
+            for pid in piece.pieces_above:
+                above_piece = self.pieces.get(pid)
+                if above_piece:
+                    above_piece.pieces_below.remove(piece_id)
+                    # Pieces above drop down
+                    above_piece.z_level -= 1
+        
+        # Add to new location (might be stacking)
+        self.add_piece(piece_id, piece, new_coordinates)
+    
+    def get_top_piece_at(self, coordinates: HexCoordinate) -> Optional[GamePiece]:
+        """Get the top piece at a given coordinate."""
+        coords_tuple = (coordinates.q, coordinates.r, coordinates.s)
+        if coords_tuple in self.stacks and self.stacks[coords_tuple]:
+            top_piece_id = self.stacks[coords_tuple][-1]
+            return self.pieces.get(top_piece_id)
+        return None
         
     def get_piece(self, piece_id: str):
         return self.pieces.get(piece_id, None)
@@ -130,7 +610,10 @@ class Player(BaseModel):
     def __init__(self, name: str, team: str, pieces: Optional[List[GamePiece]] = None):
         if pieces is None:
             pieces = [
-                *[Ant(team=team) for _ in range(12)],
+                *[Ant(team=team) for _ in range(6)],
+                *[Grasshopper(team=team) for _ in range(2)],
+                *[Spider(team=team) for _ in range(2)],
+                *[Beetle(team=team) for _ in range(2)],
                 QueenBee(team=team)
                 # super basic mode to start. add more pieces later
             ]
@@ -164,6 +647,10 @@ class GameState(BaseModel):
             self.all_pieces[piece.piece_id] = piece
         for piece in self.black_player.pieces:
             self.all_pieces[piece.piece_id] = piece
+
+    def can_slide_to(self, from_hex: HexCoordinate, to_hex: HexCoordinate, occupied: Set[Tuple[int, int, int]]) -> bool:
+        """Check if a piece can slide from one hex to an adjacent hex."""
+        return MovementHelper.can_slide_to_adjacent(from_hex, to_hex, occupied)
 
     def get_occupied_spaces(self):
         occupied = []
@@ -278,49 +765,6 @@ class GameState(BaseModel):
         print("No piece found at the given coordinates.")
         return None
 
-    def are_hexes_adjacent(self, hex1: HexCoordinate, hex2: HexCoordinate) -> bool:
-        """Check if two hexes are adjacent to each other."""
-        # Manhattan distance of 2
-        distance = abs(hex1.q - hex2.q) + abs(hex1.r - hex2.r) + abs(hex1.s - hex2.s)
-        return distance == 2
-
-    def can_slide_to(self, from_hex: HexCoordinate, to_hex: HexCoordinate, occupied: Set[Tuple[int, int, int]]) -> bool:
-        """
-        Can slide one tile adjacent, for usage during pathing to check every step is valid.
-        """
-
-        # double check path is adjacent
-        if not self.are_hexes_adjacent(from_hex, to_hex):
-            raise ValueError('Hexes are not adjacent')
-
-        # # coords
-        # from_coords = (from_hex.q, from_hex.r, from_hex.s)
-        # to_coords = (to_hex.q, to_hex.r, to_hex.s)
-
-        # neighbors
-        from_neighbors = set([(h.q, h.r, h.s) for h in from_hex.get_adjacent_hexes()])
-        to_neighbors = set([(h.q, h.r, h.s) for h in to_hex.get_adjacent_hexes()])
-
-        mutual_neighbors = from_neighbors.intersection(to_neighbors)
-        occupied_mutual = mutual_neighbors.intersection(occupied)
-
-        if len(occupied_mutual) >= 2:
-            return False # cannot slide through tight gap
-        
-        # if len(occupied_mutual) == 0:
-        #     # Check if we're sliding along the edge of the hive
-        #     all_neighbors = from_neighbors.union(to_neighbors)
-        #     all_neighbors.discard(from_coords)  # Remove the from position
-        #     all_neighbors.discard(to_coords)    # Remove the to position
-            
-        #     non_mutual_occupied = all_neighbors.intersection(occupied) - mutual_neighbors
-            
-        #     # If there are no occupied pieces touching either position (except mutual neighbors),
-        #     # the piece would lose contact during the slide
-        #     if len(non_mutual_occupied) == 0:
-        #         return False
-        
-        return True
 
     def get_valid_slide_positions(self, current: HexCoordinate, occupied: Set[Tuple[int, int, int]]) -> List[HexCoordinate]:
         """
@@ -341,7 +785,7 @@ class GameState(BaseModel):
                 continue
 
             # 2. Check if we can physically slide to this position
-            if not self.can_slide_to(current, adjacent_hex, occupied):
+            if not MovementHelper.can_slide_to_adjacent(current, adjacent_hex, occupied):
                 continue
 
             # 3. Check if this position maintains hive connection
@@ -349,11 +793,10 @@ class GameState(BaseModel):
             has_neighbor = False
             for neighbor_hex in adjacent_hex.get_adjacent_hexes():
                 neighbor_coords = (neighbor_hex.q, neighbor_hex.r, neighbor_hex.s)
-                # Don't count the current position as a neighbor (we're leaving it)
-                if neighbor_coords in occupied and neighbor_coords != current_coords:
+                if neighbor_coords in occupied:
                     has_neighbor = True
                     break
-            
+                
             if has_neighbor:
                 valid_positions.append(adjacent_hex)
         return valid_positions
@@ -370,59 +813,14 @@ class GameState(BaseModel):
                 occupied.add((piece.hex_coordinates.q, piece.hex_coordinates.r, piece.hex_coordinates.s))
 
         # check if its an ajacent move
-        if self.are_hexes_adjacent(start, end):
-            return self.can_slide_to(start, end, occupied) # can slide directly
+        if MovementHelper.are_hexes_adjacent(start, end):
+            return MovementHelper.can_slide_to_adjacent(start, end, occupied) # can slide directly
         
         # use a star pathfinding to see if a path exists
-        path = self.get_path(start, end, piece_id)
+        path = MovementHelper.get_path(self, start, end, piece_id)
         if path is not None:
             return True
         return False
-
-    def get_path(self, start: HexCoordinate, end: HexCoordinate, piece_id: str) -> Optional[List[HexCoordinate]]:
-
-        def heuristic(a: HexCoordinate, b: HexCoordinate) -> int:
-            # Manhattan distance in hex coordinates
-            return (abs(a.q - b.q) + abs(a.r - b.r) + abs(a.s - b.s)) // 2
-        
-        # Priority queue: (f_score, counter, current_hex, path)
-        # counter is used to break ties in f_score
-        counter = 0
-        open_set = []
-        heapq.heappush(open_set, (heuristic(start, end), counter, start, [start]))
-        
-        # Track visited nodes to avoid cycles
-        visited = set()
-        visited.add((start.q, start.r, start.s))
-        
-        # Get all occupied spaces except the moving piece
-        occupied = set()
-        for pid, piece in self.board_state.pieces.items():
-            if pid != piece_id and piece.location == 'board':
-                occupied.add((piece.hex_coordinates.q, piece.hex_coordinates.r, piece.hex_coordinates.s))
-        
-        while open_set:
-            _, _, current, path = heapq.heappop(open_set)
-            
-            # Check if we reached the goal
-            if current.q == end.q and current.r == end.r and current.s == end.s:
-                return path
-            
-            # Explore neighbors
-            for next_hex in self.get_valid_slide_positions(current, occupied):
-                next_coords = (next_hex.q, next_hex.r, next_hex.s)
-                
-                if next_coords not in visited:
-                    visited.add(next_coords)
-                    g_score = len(path)  # Cost from start to current
-                    h_score = heuristic(next_hex, end)  # Heuristic cost to goal
-                    f_score = g_score + h_score
-                    
-                    counter += 1
-                    new_path = path + [next_hex]
-                    heapq.heappush(open_set, (f_score, counter, next_hex, new_path))
-        
-        return None 
 
     @model_validator(mode='after')
     def validate_current_team(self):
@@ -438,83 +836,34 @@ class Turn(BaseModel):
     target_coordinates: Optional[HexCoordinate] = None
 
     @staticmethod
-    def hive_stays_connected(piece_id, game_state):
-        # BFS or DFS to check if all pieces are still connected without the piece being moved
-        # get all pieces on board except the one being moved
-        pieces_on_board = {}
-        for pid, piece in game_state.board_state.pieces.items():
-            if pid == piece_id:
-                continue
-            if piece.location == 'board':
-                pieces_on_board[pid] = piece
-        
-        if len(pieces_on_board) <= 1:
-            return True # only one piece on board, so can't break hive
-        
-        # start BFS from any piece
-        # aka, can i go from this one peice to every other piece
-        start_id = next(iter(pieces_on_board.keys()))
-        visited = {start_id}
-        queue = [start_id]
-
-        # build adjacancy map
-        coord_to_pid = {}
-        for pid, piece in pieces_on_board.items():
-            coords = (piece.hex_coordinates.q, piece.hex_coordinates.r, piece.hex_coordinates.s)
-            coord_to_pid[coords] = pid
-
-        while queue:
-            current_id = queue.pop(0)
-            current_piece = pieces_on_board[current_id]
-
-            # check all the adcajacent pieces
-            for adj_hex in current_piece.hex_coordinates.get_adjacent_hexes():
-                adj_coords = (adj_hex.q, adj_hex.r, adj_hex.s)
-
-                # find all the pieces adjacent to this piece
-                if adj_coords in coord_to_pid:
-                    adj_pid = coord_to_pid[adj_coords]
-                    if adj_pid not in visited:
-                        visited.add(adj_pid)
-                        queue.append(adj_pid)
-        return len(visited) == len(pieces_on_board) # ie if we visited every piece, hive is intact
-
-    @staticmethod
     def validate_movement(turn, game_state):
-        # generic movement validation (non-specific to piece type)
-        # have to know what id to move
+        """Simplified - delegates to piece's own validation."""
         if turn.piece_id is None:
-            raise ValueError('Movement requires piece_id to specify which piece to move')
+            raise ValueError('Movement requires piece_id')
         
-        # if the queen is not placed by turn 4, no moves allowed
-        queen = game_state.get_queen(turn.player)
-        if turn.player == 'white':
-            player_turn_number = game_state.turn // 2
-        else:
-            player_turn_number = (game_state.turn - 1) // 2
-        if player_turn_number >= 4 and queen.location == 'offboard':
-            raise ValueError(f'{turn.player.capitalize()}\'s Queen has not been placed by turn 4, cannot move pieces')
-
         piece = game_state.all_pieces.get(turn.piece_id)
-        if piece is None: # wrong id
+        if piece is None:
             raise ValueError('Piece not found')
-        if piece.team != turn.player: # hands off not yours
-            raise ValueError('Cannot move opponent piece')
-        if piece.location != 'board': # not on board
-            raise ValueError('Can only move pieces that are on the board')
-
-        # Check if the target coordinates are valid
-        if turn.target_coordinates is None:
-            raise ValueError('Movement requires target_coordinates to specify where to move the piece')
         
-        # broken hive rule
-        if not Turn.hive_stays_connected(turn.piece_id, game_state):
-            raise ValueError('Move would break the hive, which is not allowed')
+        if piece.team != turn.player:
+            raise ValueError('Cannot move opponent piece')
+        
+        if piece.location != 'board':
+            raise ValueError('Can only move pieces on the board')
+        
+        if piece.is_pinned():
+            raise ValueError(f'{piece.__class__.__name__} is pinned and cannot move')
 
-        # freedom of movement rule
-        if not game_state.check_freedom_of_movement(piece.hex_coordinates, turn.target_coordinates, turn.piece_id):
-            raise ValueError('Piece cannot slide to target coordinates due to freedom of movement rule')
-
+        # Check queen placement rule
+        queen = game_state.get_queen(turn.player)
+        player_turn = game_state.turn // 2 if turn.player == 'white' else (game_state.turn - 1) // 2
+        if player_turn >= 4 and queen.location == 'offboard':
+            raise ValueError(f'{turn.player.capitalize()} must place Queen by turn 4')
+        
+        # Delegate to piece's movement validation
+        if not piece.can_move_to(turn.target_coordinates, game_state):
+            raise ValueError(f'{piece.__class__.__name__} cannot move to that position')
+        
         return turn
     
     @staticmethod
@@ -652,7 +1001,6 @@ class Game(BaseModel):
             
             # actually move the piece
             piece = self.game_state.all_pieces.get(turn.piece_id)
-            piece.hex_coordinates = turn.target_coordinates
             self.game_state.board_state.move_piece(turn.piece_id, piece, turn.target_coordinates)
 
         elif turn.action_type == 'forfeit':

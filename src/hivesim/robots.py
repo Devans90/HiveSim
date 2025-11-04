@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import random
 from typing import List
-from game import Turn
+from game import Turn, MovementHelper
 
 
 class BaseBot(ABC):    
@@ -93,7 +93,7 @@ class BaseBot(ABC):
                 candidate_pieces = movable_pieces.get(piece_type_to_try, [])
 
                 for pid in candidate_pieces:
-                    if not Turn.hive_stays_connected(pid, game_state):
+                    if not MovementHelper.hive_stays_connected(pid, game_state):
                         continue
                         
                     piece = game_state.all_pieces.get(pid)
@@ -163,7 +163,7 @@ class BaseBot(ABC):
                         candidate_pieces = movable_pieces.get(piece_type_to_try, [])
 
                         for pid in candidate_pieces:
-                            if not Turn.hive_stays_connected(pid, game_state):
+                            if not MovementHelper.hive_stays_connected(pid, game_state):
                                 continue
                                 
                             piece = game_state.all_pieces.get(pid)
