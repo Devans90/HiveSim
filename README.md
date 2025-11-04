@@ -112,8 +112,13 @@ HiveSim uses a cube coordinate system for hexagonal tiles, where each hex is rep
 - **Spider (🕷️)**: Moves exactly three spaces around the hive
 - **Grasshopper (🦗)**: Jumps over pieces in a straight line
 - **Queen Bee (🐝)**: Moves one space, must be placed by turn 4
+
+### Not yet implemented pieces
 - **Ladybug (🐞)**: Moves two on top and one down
 - **Mosquito (🦟)**: Mimics adjacent pieces
+
+### Not planned pieces
+- **Pillbug (💊)**: Complex, game changing rules
 
 ## Game Rules
 
