@@ -400,10 +400,7 @@ class Ladybug(GamePiece):
     def can_move_to(self, target: HexCoordinate, game_state) -> bool:
         """Check if Ladybug can move to target."""
         valid_moves = self.get_valid_moves(game_state)
-        for move in valid_moves:
-            if move.q == target.q and move.r == target.r and move.s == target.s:
-                return True
-        return False
+        return target in valid_moves
 
 class Mosquito(GamePiece):
     def __init__(self, hex_coordinates=None, team: str = 'white'):
@@ -422,10 +419,7 @@ class Mosquito(GamePiece):
     def can_move_to(self, target: HexCoordinate, game_state) -> bool:
         """Check if Mosquito can move to target."""
         valid_moves = self.get_valid_moves(game_state)
-        for move in valid_moves:
-            if move.q == target.q and move.r == target.r and move.s == target.s:
-                return True
-        return False
+        return target in valid_moves
 
 class MovementHelper:
 
