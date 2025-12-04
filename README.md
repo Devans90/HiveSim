@@ -128,12 +128,16 @@ env.close()
 
 The observation is a dictionary containing:
 
-- **`board`**: `(21, 21, 5)` tensor encoding the board state
-  - Channel 0: Piece presence (0/1)
-  - Channel 1: Piece type (0-7)
-  - Channel 2: Team (0=empty, 1=white, 2=black)
-  - Channel 3: Z-level (stacking height)
-  - Channel 4: Can move (1 if piece can legally move)
+- **`board`**: `(21, 21, 15)` tensor encoding the board state with full stack information
+  - The board uses axial projection of hex coordinates (q, r) to map to a 2D grid
+  - Channels are organized by stack level (5 levels × 3 channels each):
+    - Channels 0-2: Level 0 (ground level pieces)
+    - Channels 3-5: Level 1 (first stacked piece)
+    - Channels 6-8: Level 2, etc.
+  - For each level:
+    - Channel 0: Piece type (0=empty, 1-7=piece types) - type > 0 implies piece exists
+    - Channel 1: Team (0=empty, 1=white, 2=black)
+    - Channel 2: Can move (1 if piece can legally move)
 
 - **`turn_info`**: `(4,)` array with:
   - Normalized turn number

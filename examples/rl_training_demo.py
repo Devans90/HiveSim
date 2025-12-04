@@ -151,12 +151,13 @@ def observation_structure_demo():
     board = obs['board']
     print(f"\nBoard observation shape: {board.shape}")
     print("  - Dim 0-1: Grid positions (21x21 for grid_size=10)")
-    print("  - Dim 2: Channels (5)")
-    print("    - Channel 0: Piece presence (0/1)")
-    print("    - Channel 1: Piece type (0-7)")
-    print("    - Channel 2: Team (0=empty, 1=white, 2=black)")
-    print("    - Channel 3: Z-level (stacking height)")
-    print("    - Channel 4: Can move (1 if piece can legally move)")
+    print("  - Dim 2: Channels (15 = 3 channels × 5 stack levels)")
+    print("  - Per stack level (0-4):")
+    print("    - Channel 0: Piece type (0=empty, 1-7=piece types)")
+    print("    - Channel 1: Team (0=empty, 1=white, 2=black)")
+    print("    - Channel 2: Can move (1 if piece can legally move)")
+    print("  - Stack levels preserve full stack information")
+    print("  - Level 0 = ground, Level 1+ = stacked pieces (e.g., beetles)")
     
     # Turn info
     turn_info = obs['turn_info']

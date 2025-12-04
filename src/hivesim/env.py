@@ -103,13 +103,18 @@ class HiveEnv(gym.Env):
         # Grid dimensions
         self.grid_dim = 2 * grid_size + 1
         
-        # Observation channels:
-        # 0: piece presence (0 or 1)
-        # 1: piece type (0-7)
-        # 2: team (0=empty, 1=white, 2=black)
-        # 3: z-level (stacking height)
-        # 4: can move (1 if piece can legally move)
-        self.num_channels = 5
+        # Maximum stack height (beetles can stack on pieces)
+        # In practice, stacks rarely exceed 3-4 pieces
+        self.max_stack_height = 5
+        
+        # Observation channels per stack level:
+        # 0: piece type (0=empty, 1-7=piece types) - type > 0 implies piece exists
+        # 1: team (0=empty, 1=white, 2=black)
+        # 2: can move (1 if piece can legally move, only meaningful for top piece)
+        # 
+        # Total channels = 3 channels × max_stack_height levels
+        self.channels_per_level = 3
+        self.num_channels = self.channels_per_level * self.max_stack_height
         
         # Define observation space
         self.observation_space = spaces.Dict({
@@ -167,21 +172,58 @@ class HiveEnv(gym.Env):
         return self.MAX_ACTION_SPACE_SIZE
     
     def _hex_to_grid(self, coord: HexCoordinate) -> Tuple[int, int]:
-        """Convert hex coordinate to grid indices."""
-        # Center the grid at origin
+        """
+        Convert hex cube coordinate to 2D grid indices using axial projection.
+        
+        Hive uses cube coordinates (q, r, s) where q + r + s = 0.
+        Since s is derived from q and r, we can use axial coordinates (q, r)
+        which map directly to a 2D grid. This is a standard technique for
+        representing hex grids in rectangular arrays.
+        
+        The grid is centered at (grid_size, grid_size) so the origin hex (0,0,0)
+        maps to the center of the array.
+        
+        Args:
+            coord: HexCoordinate with q, r, s values
+            
+        Returns:
+            (x, y) tuple of grid indices
+        """
         x = coord.q + self.grid_size
         y = coord.r + self.grid_size
         return (x, y)
     
     def _grid_to_hex(self, x: int, y: int) -> HexCoordinate:
-        """Convert grid indices to hex coordinate."""
+        """
+        Convert 2D grid indices back to hex cube coordinate.
+        
+        Args:
+            x, y: Grid indices
+            
+        Returns:
+            HexCoordinate with q, r, s values (s = -q - r)
+        """
         q = x - self.grid_size
         r = y - self.grid_size
         s = -q - r
         return HexCoordinate(q=q, r=r, s=s)
     
     def _encode_board(self) -> np.ndarray:
-        """Encode the current board state as a numpy array."""
+        """
+        Encode the current board state as a numpy array.
+        
+        The board is encoded as a 3D tensor where:
+        - Dimensions 0,1 are spatial (x, y grid position from hex coordinates)
+        - Dimension 2 contains channels for each stack level
+        
+        For each stack level (0 to max_stack_height-1):
+        - Channel 0: piece type (0=empty, 1-7=piece types)
+        - Channel 1: team (0=empty, 1=white, 2=black)
+        - Channel 2: can move (1 if piece can legally move)
+        
+        This preserves full stack information - all pieces in a stack are encoded,
+        not just the top piece.
+        """
         board = np.zeros((self.grid_dim, self.grid_dim, self.num_channels), dtype=np.float32)
         
         if self.game is None:
@@ -196,21 +238,30 @@ class HiveEnv(gym.Env):
             x, y = self._hex_to_grid(piece.hex_coordinates)
             
             # Check bounds
-            if 0 <= x < self.grid_dim and 0 <= y < self.grid_dim:
-                # Only encode the top piece at each position
-                if board[x, y, 0] == 0 or piece.z_level > board[x, y, 3]:
-                    board[x, y, 0] = 1  # Piece present
-                    board[x, y, 1] = PIECE_TYPE_MAP.get(PIECE_CLASS_MAP.get(type(piece), ''), 0)
-                    board[x, y, 2] = 1 if piece.team == 'white' else 2
-                    board[x, y, 3] = piece.z_level
-                    
-                    # Check if piece can move (expensive, do selectively)
-                    if piece.team == game_state.current_team:
-                        try:
-                            valid_moves = piece.get_valid_moves(game_state)
-                            board[x, y, 4] = 1 if len(valid_moves) > 0 else 0
-                        except Exception:
-                            board[x, y, 4] = 0
+            if not (0 <= x < self.grid_dim and 0 <= y < self.grid_dim):
+                continue
+            
+            # Get the z-level for this piece (clamped to max_stack_height)
+            z_level = min(piece.z_level, self.max_stack_height - 1)
+            
+            # Calculate channel offset for this stack level
+            channel_offset = z_level * self.channels_per_level
+            
+            # Encode piece type (non-zero type implies piece exists at this level)
+            piece_type = PIECE_TYPE_MAP.get(PIECE_CLASS_MAP.get(type(piece), ''), 0)
+            board[x, y, channel_offset + 0] = piece_type
+            
+            # Encode team
+            board[x, y, channel_offset + 1] = 1 if piece.team == 'white' else 2
+            
+            # Check if piece can move (only top pieces can typically move)
+            # A piece can only move if it's not pinned (nothing above it)
+            if piece.team == game_state.current_team and not piece.is_pinned():
+                try:
+                    valid_moves = piece.get_valid_moves(game_state)
+                    board[x, y, channel_offset + 2] = 1 if len(valid_moves) > 0 else 0
+                except Exception:
+                    board[x, y, channel_offset + 2] = 0
         
         return board
     

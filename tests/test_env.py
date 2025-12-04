@@ -59,7 +59,9 @@ class TestObservationSpace:
         """Test board observation has correct shape."""
         env = HiveEnv(grid_size=10)
         board_space = env.observation_space['board']
-        expected_shape = (21, 21, 5)  # 2*10+1, 2*10+1, 5 channels
+        # Shape: (grid_dim, grid_dim, channels_per_level * max_stack_height)
+        # Default: (21, 21, 3 * 5) = (21, 21, 15)
+        expected_shape = (21, 21, 15)
         assert board_space.shape == expected_shape
     
     def test_turn_info_shape(self):
