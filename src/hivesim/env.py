@@ -241,11 +241,14 @@ class HiveEnv(gym.Env):
             if not (0 <= x < self.grid_dim and 0 <= y < self.grid_dim):
                 continue
             
-            # Get the z-level for this piece (clamped to max_stack_height)
-            z_level = min(piece.z_level, self.max_stack_height - 1)
+            # Get the z-level for this piece
+            # Note: If z_level exceeds max_stack_height, skip the piece to avoid
+            # data corruption. In practice, stacks rarely exceed 3-4 pieces.
+            if piece.z_level >= self.max_stack_height:
+                continue
             
             # Calculate channel offset for this stack level
-            channel_offset = z_level * self.channels_per_level
+            channel_offset = piece.z_level * self.channels_per_level
             
             # Encode piece type (non-zero type implies piece exists at this level)
             piece_type = PIECE_TYPE_MAP.get(PIECE_CLASS_MAP.get(type(piece), ''), 0)
@@ -254,9 +257,10 @@ class HiveEnv(gym.Env):
             # Encode team
             board[x, y, channel_offset + 1] = 1 if piece.team == 'white' else 2
             
-            # Check if piece can move (only top pieces can typically move)
-            # A piece can only move if it's not pinned (nothing above it)
-            if piece.team == game_state.current_team and not piece.is_pinned():
+            # Check if piece can move
+            # Only check movability for pieces that aren't pinned (have nothing above them)
+            # This provides information about which pieces could potentially move
+            if not piece.is_pinned():
                 try:
                     valid_moves = piece.get_valid_moves(game_state)
                     board[x, y, channel_offset + 2] = 1 if len(valid_moves) > 0 else 0
