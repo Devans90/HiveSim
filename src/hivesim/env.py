@@ -142,25 +142,29 @@ class HiveEnv(gym.Env):
         self.game: Optional[Game] = None
         self._legal_actions: List[Turn] = []
         self._action_to_turn_map: Dict[int, Turn] = {}
+    # Maximum action space size constant
+    # This is computed as: placement actions + movement actions
+    # Placements: 5 piece types × potential grid positions (realistically ~100 positions used)
+    # Movements: ~13 pieces × ~100 potential destinations each
+    # We use a generous upper bound to ensure all legal actions fit
+    MAX_ACTION_SPACE_SIZE = 5000
         
     def _get_action_space_size(self) -> int:
         """
-        Calculate total action space size.
+        Get the action space size.
         
-        Action encoding:
-        - Placement: 5 piece types × grid_dim² positions
-        - Movement: simplified as grid_dim² × grid_dim² (from × to)
+        We use a fixed upper bound and mask illegal actions at each step.
+        This approach is standard for games with variable legal action counts.
         
-        For efficiency, we use a reasonable upper bound and mask illegal actions.
+        The actual number of legal actions varies greatly:
+        - Early game: ~5-20 placement actions
+        - Mid game: ~50-200 placement + movement actions
+        - Complex positions: potentially 500+ legal moves
+        
+        Using a fixed upper bound with masking allows consistent network architecture
+        while still supporting all possible game states.
         """
-        num_placements = len(PLACEABLE_PIECE_TYPES) * self.grid_dim * self.grid_dim
-        # For moves, we'll use a more conservative estimate
-        # In practice, pieces move from one position to another
-        num_moves = self.grid_dim * self.grid_dim * self.grid_dim * self.grid_dim
-        
-        # Use a simpler approach: enumerate legal actions dynamically
-        # and use a fixed maximum action space
-        return 5000  # Reasonable upper bound for Hive
+        return self.MAX_ACTION_SPACE_SIZE
     
     def _hex_to_grid(self, coord: HexCoordinate) -> Tuple[int, int]:
         """Convert hex coordinate to grid indices."""
