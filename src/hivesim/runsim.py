@@ -1,8 +1,8 @@
 import time
-from game import Game, GameState
-from robots import RandomBot
-from visualization import visualize_game_board
-from Gamelogging import GameLogger
+from hivesim.game import Game, GameState
+from hivesim.robots import RandomBot
+from hivesim.visualization import visualize_game_board
+from hivesim.Gamelogging import GameLogger
 
 def simulate_game(white_bot, black_bot, verbose=False, plot_game: bool = False, live_delay: float = 0.5, enable_logging: bool = False):
     """Simulate a game between two bots with optional live visualization."""

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import random
 from typing import List
-from game import Turn, MovementHelper
+from hivesim.game import Turn, MovementHelper
 
 
 class BaseBot(ABC):    

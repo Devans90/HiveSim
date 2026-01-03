@@ -39,6 +39,26 @@ The script will:
 
 **Note:** The visualization will open in your default web browser. Close the browser window to stop watching the game (the simulation will continue running).
 
+### rl_training_demo.py
+
+Demonstrates using HiveSim for reinforcement learning:
+- Creating and using the Gymnasium-compatible `HiveEnv`
+- Understanding the observation space structure
+- Using action masks for efficient learning
+- Basic training loop structure
+- Self-play concepts
+
+**Usage:**
+```bash
+python examples/rl_training_demo.py
+```
+
+The script shows:
+1. Random policy demo with reward tracking
+2. Action mask usage for legal move selection
+3. Observation space structure breakdown
+4. Self-play training concepts
+
 ## Creating Custom Bots
 
 You can create your own bot by extending the `BaseBot` class from `hivesim.robots`:
@@ -66,16 +86,48 @@ class MyCustomBot(BaseBot):
         return available_spaces[0]
 ```
 
+## Using the RL Environment
+
+For training RL agents, use the `HiveEnv` class:
+
+```python
+from hivesim.env import HiveEnv
+from hivesim.robots import RandomBot
+import numpy as np
+
+# Create environment
+opponent = RandomBot(team='black')
+env = HiveEnv(agent_team='white', opponent=opponent)
+
+# Reset and get initial observation
+obs, info = env.reset()
+
+# Training loop
+while True:
+    # Use action mask to get legal actions
+    legal_actions = np.where(obs['action_mask'] == 1)[0]
+    action = np.random.choice(legal_actions)  # Replace with your policy
+    
+    obs, reward, terminated, truncated, info = env.step(action)
+    
+    if terminated or truncated:
+        break
+
+env.close()
+```
+
 ## Tips for Game Development
 
 1. **Verbose Mode**: Set `verbose=True` in `simulate_game()` to see detailed move information
 2. **Visualization**: Set `plot_game=True` to enable live board visualization
 3. **Speed Control**: Adjust `live_delay` parameter to control visualization speed
 4. **Turn Limit**: Games have a 200-turn limit by default to prevent infinite loops
+5. **Reward Shaping**: Enable `reward_shaping=True` in HiveEnv for intermediate rewards
 
 ## Next Steps
 
 - Try modifying the example to use different bot strategies
 - Create your own bot implementation
+- Train an RL agent using the HiveEnv
 - Experiment with different piece compositions
 - Test edge cases and interesting board states

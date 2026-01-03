@@ -2,7 +2,7 @@ import plotly.graph_objects as go
 import numpy as np
 from typing import List, Optional
 import tempfile, webbrowser, os, time
-from game import HexCoordinate, BoardState
+from hivesim.game import HexCoordinate, BoardState
 
 _html_path = os.path.join(tempfile.gettempdir(), "hive_live.html")
 

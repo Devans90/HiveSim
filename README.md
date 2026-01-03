@@ -1,6 +1,6 @@
 # HiveSim
 
-A Python simulation of the Hive board game with hexagonal grid mechanics, supporting AI bots and game visualization.
+A Python simulation of the Hive board game with hexagonal grid mechanics, supporting AI bots, game visualization, and **Gymnasium-compatible reinforcement learning**.
 
 ![demo 1](/media/part1.gif)
 
@@ -13,6 +13,7 @@ HiveSim is a comprehensive implementation of Hive-like game mechanics using a he
 - Support for multiple game piece types (Ant, Beetle, Spider, Grasshopper, Queen Bee, Ladybug, Mosquito)
 - AI bot framework for automated gameplay
 - Real-time game visualization using Plotly
+- **Gymnasium-compatible RL environment for training agents**
 - Comprehensive test coverage
 
 ## Installation
@@ -82,6 +83,94 @@ turn = Turn(
 )
 
 game.apply_turn(turn)
+```
+
+## Reinforcement Learning
+
+HiveSim includes a Gymnasium-compatible environment for training RL agents to play Hive.
+
+### Basic RL Usage
+
+```python
+from hivesim.env import HiveEnv
+from hivesim.robots import RandomBot
+import numpy as np
+
+# Create environment with an opponent
+opponent = RandomBot(team='black', name='OpponentBot')
+env = HiveEnv(
+    agent_team='white',
+    opponent=opponent,
+    max_turns=200,
+    reward_shaping=True  # Enable intermediate rewards
+)
+
+# Training loop structure
+obs, info = env.reset(seed=42)
+
+while True:
+    # Get legal actions using action mask
+    action_mask = obs['action_mask']
+    legal_actions = np.where(action_mask == 1)[0]
+    
+    # Your policy would go here - random for demo
+    action = np.random.choice(legal_actions)
+    
+    obs, reward, terminated, truncated, info = env.step(action)
+    
+    if terminated or truncated:
+        break
+
+env.close()
+```
+
+### Observation Space
+
+The observation is a dictionary containing:
+
+- **`board`**: `(21, 21, 15)` tensor encoding the board state with full stack information
+  - The board uses axial projection of hex coordinates (q, r) to map to a 2D grid
+  - Channels are organized by stack level (5 levels × 3 channels each):
+    - Channels 0-2: Level 0 (ground level pieces)
+    - Channels 3-5: Level 1 (first stacked piece)
+    - Channels 6-8: Level 2, etc.
+  - For each level:
+    - Channel 0: Piece type (0=empty, 1-7=piece types) - type > 0 implies piece exists
+    - Channel 1: Team (0=empty, 1=white, 2=black)
+    - Channel 2: Can move (1 if piece can legally move)
+
+- **`turn_info`**: `(4,)` array with:
+  - Normalized turn number
+  - Current team (1=white, 0=black)
+  - White queen placed (0/1)
+  - Black queen placed (0/1)
+
+- **`action_mask`**: Boolean array indicating legal actions
+
+### Action Space
+
+The action space is a discrete space with masked illegal actions. Use `env.get_legal_actions()` to get valid action indices, or use the `action_mask` from observations.
+
+### Rewards
+
+- **+1.0** for winning
+- **-1.0** for losing  
+- **0.0** for draw (max turns reached)
+- **Optional shaped rewards** for strategic positions (surrounding opponent queen, protecting own queen)
+
+### Integration with RL Libraries
+
+HiveEnv works with standard RL libraries. For best results, use action masking:
+
+```python
+# With Stable-Baselines3 (requires sb3-contrib for masking)
+# pip install sb3-contrib
+from sb3_contrib import MaskablePPO
+from sb3_contrib.common.maskable.utils import get_action_masks
+
+env = HiveEnv(agent_team='white', opponent=opponent)
+model = MaskablePPO("MultiInputPolicy", env, verbose=1)
+model.learn(total_timesteps=100000)
 ```
 
 ## Hexagonal Coordinate System
@@ -160,6 +249,7 @@ The test suite includes:
 - Hive connectivity rules
 - Movement validation and pathfinding
 - Complex board scenarios
+- RL environment functionality
 
 ## Project Structure
 
@@ -168,6 +258,7 @@ HiveSim/
 ├── src/hivesim/
 │   ├── __init__.py
 │   ├── game.py           # Core game logic and piece definitions
+│   ├── env.py            # Gymnasium RL environment
 │   ├── robots.py         # AI bot implementations
 │   ├── runsim.py         # Game simulation runner
 │   └── visualization.py  # Plotly-based visualization
@@ -175,7 +266,11 @@ HiveSim/
 │   ├── test_hex_coordinate.py
 │   ├── test_game_pieces.py
 │   ├── test_board_states.py
-│   └── test_movement_rules.py
+│   ├── test_movement_rules.py
+│   └── test_env.py       # RL environment tests
+├── examples/
+│   ├── simple_game.py    # Basic game example
+│   └── rl_training_demo.py  # RL training demo
 ├── media/                # Demo gifs and images
 ├── notebooks/            # Jupyter notebooks for experiments
 ├── pyproject.toml        # Project configuration
@@ -193,4 +288,3 @@ Contributions are welcome! Please ensure:
 ## License
 
 See LICENSE file for details.
-

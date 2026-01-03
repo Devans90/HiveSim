@@ -267,8 +267,8 @@ def simulate_game_with_logging(white_bot, black_bot, verbose=False,
 # Example usage with statistics
 if __name__ == "__main__":
     import time
-    from game import Game, GameState
-    from robots import RandomBot
+    from hivesim.game import Game, GameState
+    from hivesim.robots import RandomBot
     
     white = RandomBot(team="white", name="WhiteBot")
     black = RandomBot(team="black", name="BlackBot")
