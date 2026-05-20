@@ -1,32 +1,30 @@
 """
-Interactive browser GUI to play Hive against an AI opponent.
+Interactive pygame GUI to play Hive against an AI opponent.
 
 This example demonstrates:
-- Plotly Dash interactive board (click to select, click to move/place)
-- Live board rendering reusing the existing Plotly hex drawing helpers
+- pygame-based board rendering with flat-top hexagons
+- Click to select a piece or placement hex; valid moves highlighted in green
+- Sidebar with off-board piece inventory for placement
+- AI auto-plays in a background thread so the window stays responsive
 - Pluggable AI via --ai MODULE.CLASS (defaults to RandomBot)
 
 Usage:
     python play_vs_ai.py                         # Human (white) vs RandomBot
     python play_vs_ai.py --human-color black     # Human plays black
     python play_vs_ai.py --ai mymodule.MyBot     # Use a custom AI
-    python play_vs_ai.py --port 8080             # Change server port
-    python play_vs_ai.py --delay 0.3             # Pause (s) before AI moves
-
-Open http://localhost:8050 (or the --port value) in your browser.
+    python play_vs_ai.py --delay 0.5             # Pause (s) before AI moves
 """
 
 from __future__ import annotations
 
 import argparse
 import importlib
-import json
+import math
+import threading
 import time
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
-import plotly.graph_objects as go
-from dash import ALL, Dash, Input, Output, State, callback_context, dcc, html
-from dash.exceptions import PreventUpdate
+import pygame
 
 from hivesim.game import (
     Game,
@@ -36,52 +34,166 @@ from hivesim.game import (
     Turn,
 )
 from hivesim.robots import RandomBot
-from hivesim.visualization import get_hexagon_vertices, hex_to_pixel
 
 # ---------------------------------------------------------------------------
-# Visual constants
+# Window / layout constants
 # ---------------------------------------------------------------------------
-_HEX_SIZE = 0.95
-_TEAM_FILL = {"black": "#1D1A1A", "white": "#FFFFFF"}
-_TEAM_BORDER = {"black": "#000000", "white": "#808080"}
+WIN_W, WIN_H = 1100, 750
+BOARD_W = 800          # pixels wide for the hex board
+PANEL_X = BOARD_W      # left edge of the side panel
+PANEL_W = WIN_W - BOARD_W
 
-_SEL_FILL = "#FFD700"           # gold – selected piece
-_SEL_BORDER = "#FF8C00"
-_VALID_FILL = "rgba(0,200,80,0.35)"  # green – valid targets
-_VALID_BORDER = "#00AA44"
-_MOVABLE_BORDER = "#4169E1"     # royal-blue – human piece that can act
+HEX_SIZE = 56          # pixels from centre to vertex (flat-top)
 
-PIECE_ICONS = {
-    "ant": "🐜",
-    "grasshopper": "🦗",
-    "spider": "🕷️",
-    "beetle": "🪲",
-    "queenbee": "🐝",
-    "ladybug": "🐞",
-    "mosquito": "🦟",
+# Colours (R, G, B)
+BG_COLOR = (240, 240, 240)
+BOARD_BG = (255, 255, 255)
+GRID_COLOR = (200, 200, 200)
+WHITE_FILL = (255, 255, 255)
+WHITE_BORDER = (130, 130, 130)
+BLACK_FILL = (30, 28, 28)
+BLACK_BORDER = (0, 0, 0)
+SEL_FILL = (255, 215, 0)        # gold – selected piece
+SEL_BORDER = (220, 120, 0)
+VALID_FILL = (0, 200, 80, 100)  # semi-transparent green (RGBA surface)
+VALID_BORDER = (0, 160, 60)
+MOVABLE_BORDER = (65, 105, 225)  # royal-blue – pieces the human can move
+EMPTY_HEX_FILL = (248, 248, 248)
+EMPTY_HEX_BORDER = (190, 190, 190)
+PANEL_BG = (248, 248, 252)
+PANEL_TEXT = (40, 40, 40)
+BTN_NORMAL = (225, 225, 235)
+BTN_HOVER = (200, 215, 255)
+BTN_ACTIVE = (170, 220, 170)
+BTN_DISABLED = (210, 210, 210)
+BTN_TEXT = (30, 30, 30)
+BTN_TEXT_DISABLED = (150, 150, 150)
+AI_BTN_BG = (220, 235, 255)
+WARN_COLOR = (200, 0, 0)
+STATUS_COLOR = (80, 80, 80)
+
+# Piece display text (fallback when emoji font unavailable)
+PIECE_LABELS = {
+    "ant": "ANT",
+    "grasshopper": "GRS",
+    "spider": "SPD",
+    "beetle": "BTL",
+    "queenbee": "QBE",
+    "ladybug": "LDY",
+    "mosquito": "MOS",
 }
 
-_STYLE_CANCEL_HIDDEN = {"display": "none"}
-_STYLE_CANCEL_SHOWN = {
-    "display": "block",
-    "width": "100%",
-    "marginTop": "10px",
-    "padding": "8px",
-    "cursor": "pointer",
-    "border": "2px solid #cc0000",
-    "borderRadius": "6px",
-    "background": "#fff0f0",
-    "color": "#cc0000",
-    "fontSize": "14px",
-}
+# Custom pygame event fired when the AI finishes its turn
+AI_DONE = pygame.USEREVENT + 1
 
 # ---------------------------------------------------------------------------
-# Module-level game state (single-user local app)
+# Hex ↔ pixel helpers   (flat-top orientation, matching visualization.py)
 # ---------------------------------------------------------------------------
 
+def hex_to_screen(q: int, r: int, size: float, ox: float, oy: float) -> Tuple[float, float]:
+    """Flat-top hex: convert cube coords to screen pixels."""
+    x = size * (3 / 2 * q)
+    y = size * (math.sqrt(3) / 2 * q + math.sqrt(3) * r)
+    return ox + x, oy + y
 
-class _AppState:
-    """Mutable singleton that holds the live game and UI selection state."""
+
+def screen_to_hex(sx: float, sy: float, size: float, ox: float, oy: float) -> HexCoordinate:
+    """Convert screen pixels to the nearest flat-top hex cube coordinate.
+
+    Formulae are the inverse of ``hex_to_screen`` (flat-top orientation).
+    Reference: https://www.redblobgames.com/grids/hexagons/#pixel-to-hex
+    """
+    x = (sx - ox) / size
+    y = (sy - oy) / size
+    q = 2 / 3 * x
+    r = -1 / 3 * x + math.sqrt(3) / 3 * y
+    s = -q - r
+    # Cube-coordinate rounding
+    rq, rr, rs = round(q), round(r), round(s)
+    dq, dr, ds = abs(rq - q), abs(rr - r), abs(rs - s)
+    if dq > dr and dq > ds:
+        rq = -rr - rs
+    elif dr > ds:
+        rr = -rq - rs
+    else:
+        rs = -rq - rr
+    return HexCoordinate(q=rq, r=rr, s=rs)
+
+
+def hex_vertices(cx: float, cy: float, size: float) -> List[Tuple[float, float]]:
+    """Return the 6 screen vertices of a flat-top hex centred at (cx, cy)."""
+    pts = []
+    for i in range(6):
+        angle = math.radians(60 * i)
+        pts.append((cx + size * math.cos(angle), cy + size * math.sin(angle)))
+    return pts
+
+
+# ---------------------------------------------------------------------------
+# Game-logic helpers
+# ---------------------------------------------------------------------------
+
+def _valid_placement_targets(piece_type: str, gs: GameState) -> List[HexCoordinate]:
+    result: List[HexCoordinate] = []
+    for space in gs.get_available_spaces():
+        t = Turn(
+            player=gs.current_team,
+            piece_type=piece_type,
+            action_type="place",
+            target_coordinates=space,
+        )
+        try:
+            Turn.validate_placement(t, gs)
+            result.append(space)
+        except ValueError:
+            pass
+    return result
+
+
+def _valid_move_targets(piece_id: str, gs: GameState) -> List[HexCoordinate]:
+    if not MovementHelper.hive_stays_connected(piece_id, gs):
+        return []
+    piece = gs.all_pieces.get(piece_id)
+    return piece.get_valid_moves(gs) if piece else []
+
+
+def _available_pieces(gs: GameState, team: str) -> dict:
+    """Map piece_type → count for off-board pieces of *team*."""
+    player = gs.white_player if team == "white" else gs.black_player
+    counts: dict = {}
+    for p in player.pieces:
+        if p.location == "offboard":
+            pt = p.__class__.__name__.lower()
+            counts[pt] = counts.get(pt, 0) + 1
+    return counts
+
+
+def _movable_piece_ids(gs: GameState, team: str) -> set:
+    player = gs.white_player if team == "white" else gs.black_player
+    return {
+        p.piece_id
+        for p in player.pieces
+        if p.location == "board" and _valid_move_targets(p.piece_id, gs)
+    }
+
+
+def _must_place_queen(gs: GameState, team: str) -> bool:
+    queen = gs.get_queen(team)
+    player_turn = gs.turn // 2 if team == "white" else (gs.turn - 1) // 2
+    return bool(queen and queen.location == "offboard" and player_turn >= 3)
+
+
+def _get_top_piece_id(coord: HexCoordinate, gs: GameState) -> Optional[str]:
+    stack = gs.board_state.stacks.get((coord.q, coord.r, coord.s))
+    return stack[-1] if stack else None
+
+
+# ---------------------------------------------------------------------------
+# Application state
+# ---------------------------------------------------------------------------
+
+class AppState:
+    """Single mutable object holding all game + UI state."""
 
     def __init__(self) -> None:
         self.game: Optional[Game] = None
@@ -89,8 +201,8 @@ class _AppState:
         self.ai_bot = None
         self.ai_delay: float = 0.5
 
-        # UI selection state
-        self.action_mode: str = "idle"  # 'idle' | 'move_target' | 'place_target'
+        # UI selection
+        self.action_mode: str = "idle"          # 'idle' | 'move_target' | 'place_target'
         self.selected_piece_id: Optional[str] = None
         self.selected_piece_type: Optional[str] = None
         self.valid_targets: List[HexCoordinate] = []
@@ -98,7 +210,13 @@ class _AppState:
         # Outcome
         self.winner: Optional[str] = None
         self.status_msg: str = ""
-        self.last_move_arrow: Optional[tuple] = None  # (origin, dest, team)
+        self.last_move_arrow: Optional[Tuple] = None  # (origin, dest, team)
+
+        # AI thread guard
+        self.ai_thinking: bool = False
+
+        # Board viewport (offset so hexes are centred)
+        self.board_offset: Tuple[float, float] = (BOARD_W / 2, WIN_H / 2)
 
     def reset(self, human_color: str, ai_bot) -> None:
         self.game = Game(game_state=GameState(verbose=False))
@@ -111,459 +229,29 @@ class _AppState:
         self.winner = None
         self.status_msg = ""
         self.last_move_arrow = None
-
-
-_state = _AppState()
-
-
-# ---------------------------------------------------------------------------
-# Game-logic helpers
-# ---------------------------------------------------------------------------
-
-
-def _valid_placement_targets(piece_type: str, game_state: GameState) -> List[HexCoordinate]:
-    """Return all board positions where *piece_type* may legally be placed."""
-    result: List[HexCoordinate] = []
-    for space in game_state.get_available_spaces():
-        t = Turn(
-            player=game_state.current_team,
-            piece_type=piece_type,
-            action_type="place",
-            target_coordinates=space,
-        )
-        try:
-            Turn.validate_placement(t, game_state)
-            result.append(space)
-        except ValueError:
-            pass
-    return result
-
-
-def _valid_move_targets(piece_id: str, game_state: GameState) -> List[HexCoordinate]:
-    """Return all positions a board piece can legally move to."""
-    if not MovementHelper.hive_stays_connected(piece_id, game_state):
-        return []
-    piece = game_state.all_pieces.get(piece_id)
-    return piece.get_valid_moves(game_state) if piece else []
-
-
-def _available_pieces(game_state: GameState, team: str) -> dict:
-    """Map piece_type → count for off-board pieces belonging to *team*."""
-    player = game_state.white_player if team == "white" else game_state.black_player
-    counts: dict = {}
-    for p in player.pieces:
-        if p.location == "offboard":
-            pt = p.__class__.__name__.lower()
-            counts[pt] = counts.get(pt, 0) + 1
-    return counts
-
-
-def _movable_piece_ids(game_state: GameState, team: str) -> set:
-    """IDs of board pieces that have at least one valid move."""
-    player = game_state.white_player if team == "white" else game_state.black_player
-    return {
-        p.piece_id
-        for p in player.pieces
-        if p.location == "board" and _valid_move_targets(p.piece_id, game_state)
-    }
-
-
-def _get_piece_id_at(coord: HexCoordinate, game_state: GameState) -> Optional[str]:
-    """Return the top piece_id at *coord*, or None."""
-    stack = game_state.board_state.stacks.get((coord.q, coord.r, coord.s))
-    return stack[-1] if stack else None
-
-
-def _must_place_queen(game_state: GameState, team: str) -> bool:
-    """Return True if *team* is forced to place their queen this turn."""
-    queen = game_state.get_queen(team)
-    player_turn = game_state.turn // 2 if team == "white" else (game_state.turn - 1) // 2
-    return bool(queen and queen.location == "offboard" and player_turn >= 3)
+        self.ai_thinking = False
+        self.board_offset = (BOARD_W / 2, WIN_H / 2)
 
 
 # ---------------------------------------------------------------------------
-# Figure builder
+# AI threading
 # ---------------------------------------------------------------------------
 
-
-def build_figure() -> go.Figure:
-    """Render the current game state as an interactive Plotly figure."""
-    st = _state
-    gs = st.game.game_state
-    bs = gs.board_state
-
-    fig = go.Figure()
-    icon_size = int(25 * _HEX_SIZE)
-
-    vt_set = {(t.q, t.r, t.s) for t in st.valid_targets}
-
-    # Group board pieces by coordinate (handles beetle stacks)
-    coord_to_stack: dict = {}
-    for piece_id, piece in bs.pieces.items():
-        if piece.location != "board" or piece.hex_coordinates is None:
-            continue
-        key = (piece.hex_coordinates.q, piece.hex_coordinates.r, piece.hex_coordinates.s)
-        coord_to_stack.setdefault(key, []).append((piece.z_level, piece_id, piece))
-    for key in coord_to_stack:
-        coord_to_stack[key].sort(key=lambda x: x[0])
-
-    occupied = set(coord_to_stack.keys())
-
-    # Pieces the human can currently move (highlighted with blue border)
-    movable_ids: set = set()
-    if not st.winner and gs.current_team == st.human_color and st.action_mode == "idle":
-        movable_ids = _movable_piece_ids(gs, st.human_color)
-
-    # ---- Empty / target hexes ----
-    available_spaces = gs.get_available_spaces()
-    for coord in available_spaces:
-        key = (coord.q, coord.r, coord.s)
-        if key in occupied:
-            continue
-        x, y = hex_to_pixel(coord)
-        hx, hy = get_hexagon_vertices(x, y, _HEX_SIZE)
-
-        is_target = key in vt_set
-        fig.add_trace(go.Scatter(
-            x=hx, y=hy,
-            fill="toself",
-            fillcolor=_VALID_FILL if is_target else "#F5F5F5",
-            line=dict(
-                color=_VALID_BORDER if is_target else "lightgray",
-                width=3 if is_target else 2,
-                dash="solid" if is_target else "dot",
-            ),
-            mode="lines", showlegend=False,
-            hovertemplate=f"({coord.q},{coord.r},{coord.s})<extra></extra>",
-        ))
-
-    # ---- Board pieces ----
-    for key, stack in coord_to_stack.items():
-        coord = HexCoordinate(q=key[0], r=key[1], s=key[2])
-        x, y = hex_to_pixel(coord)
-
-        for z_level, piece_id, piece in stack:
-            ox, oy = x + z_level * 0.15, y + z_level * 0.15
-            size = _HEX_SIZE * (0.95 - z_level * 0.05)
-            hx, hy = get_hexagon_vertices(ox, oy, size)
-
-            is_top = z_level == stack[-1][0]
-            is_selected = piece_id == st.selected_piece_id
-            is_target_hex = key in vt_set
-            is_movable = piece_id in movable_ids
-
-            if is_selected:
-                fill_color, line_color, line_width = _SEL_FILL, _SEL_BORDER, 4
-            elif is_target_hex:
-                fill_color, line_color, line_width = _VALID_FILL, _VALID_BORDER, 3
-            elif is_movable and is_top:
-                fill_color = _TEAM_FILL.get(piece.team, "lightgray")
-                line_color, line_width = _MOVABLE_BORDER, 3
-            else:
-                fill_color = _TEAM_FILL.get(piece.team, "lightgray")
-                line_color = _TEAM_BORDER.get(piece.team, "gray")
-                line_width = 3 if is_top else 2
-
-            hover = (
-                f"{piece.__class__.__name__} ({piece.team})<br>"
-                f"pos: ({coord.q},{coord.r},{coord.s})  z={z_level}"
-            )
-            if len(stack) > 1:
-                hover += f"<br>stack depth: {len(stack)}"
-
-            fig.add_trace(go.Scatter(
-                x=hx, y=hy, fill="toself", fillcolor=fill_color,
-                line=dict(color=line_color, width=line_width),
-                mode="lines", showlegend=False,
-                hovertemplate=f"{hover}<extra></extra>",
-            ))
-
-            # Piece icon
-            text_size = icon_size if is_top else int(icon_size * 0.6)
-            piece_icon = getattr(piece, "icon", None) or PIECE_ICONS.get(
-                piece.__class__.__name__.lower(), "?"
-            )
-            fig.add_trace(go.Scatter(
-                x=[ox], y=[oy],
-                mode="text", text=[piece_icon],
-                textfont=dict(size=text_size, color="black" if is_top else "gray"),
-                showlegend=False, hoverinfo="skip",
-            ))
-
-        # Coordinate label on top piece
-        top_z, _, top_piece = stack[-1]
-        ox, oy = x + top_z * 0.15, y + top_z * 0.15
-        lbl_color = "black" if _TEAM_FILL.get(top_piece.team) == "#FFFFFF" else "white"
-        coord_lbl = f"({coord.q},{coord.r},{coord.s})"
-        if len(stack) > 1:
-            coord_lbl += f" [z{top_z}]"
-        fig.add_trace(go.Scatter(
-            x=[ox], y=[oy - 0.38],
-            mode="text", text=[coord_lbl],
-            textfont=dict(size=10, color=lbl_color),
-            showlegend=False, hoverinfo="skip",
-        ))
-
-    # ---- Last-move arrow ----
-    if st.last_move_arrow:
-        origin, dest, team = st.last_move_arrow
-        xs, ys = hex_to_pixel(origin)
-        xe, ye = hex_to_pixel(dest)
-        fig.add_annotation(
-            x=xe, y=ye, ax=xs, ay=ys,
-            xref="x", yref="y", axref="x", ayref="y",
-            showarrow=True, arrowhead=2, arrowsize=2, arrowwidth=4,
-            arrowcolor=_TEAM_BORDER.get(team, "gray"), opacity=0.65,
-        )
-
-    # ---- Invisible click-target markers ----
-    # One per hex centre; customdata=[q, r, s] lets the callback identify clicks.
-    click_xs, click_ys, click_cd = [], [], []
-    for key, _ in coord_to_stack.items():
-        cx, cy = hex_to_pixel(HexCoordinate(q=key[0], r=key[1], s=key[2]))
-        click_xs.append(cx)
-        click_ys.append(cy)
-        click_cd.append([key[0], key[1], key[2]])
-    for coord in available_spaces:
-        key = (coord.q, coord.r, coord.s)
-        if key in occupied:
-            continue
-        cx, cy = hex_to_pixel(coord)
-        click_xs.append(cx)
-        click_ys.append(cy)
-        click_cd.append([coord.q, coord.r, coord.s])
-
-    if click_xs:
-        fig.add_trace(go.Scatter(
-            x=click_xs, y=click_ys,
-            mode="markers",
-            marker=dict(size=48, opacity=0, symbol="hexagon"),
-            customdata=click_cd,
-            hoverinfo="skip",
-            showlegend=False,
-            name="_click_targets",
-        ))
-
-    turn_label = (
-        f"Turn {gs.turn} – "
-        + ("Your turn" if gs.current_team == st.human_color else "AI's turn")
-        + f"  ({gs.current_team.upper()})"
-    )
-    if st.winner:
-        if st.winner == st.human_color:
-            turn_label = "You WIN! 🎉"
-        else:
-            turn_label = f"AI wins ({st.winner.upper()})"
-
-    fig.update_layout(
-        title=dict(text=f"Hive – {turn_label}", font=dict(size=18)),
-        showlegend=False,
-        hovermode="closest",
-        xaxis=dict(
-            scaleanchor="y", scaleratio=1,
-            showgrid=True, gridcolor="lightgray", zeroline=False,
-        ),
-        yaxis=dict(showgrid=True, gridcolor="lightgray", zeroline=False),
-        plot_bgcolor="white",
-        width=800, height=800,
-        margin=dict(l=20, r=20, t=60, b=20),
-        clickmode="event",
-    )
-    return fig
-
-
-# ---------------------------------------------------------------------------
-# Side-panel content builder
-# ---------------------------------------------------------------------------
-
-
-def _build_piece_buttons() -> list:
-    """Return Dash children for the 'Place a piece' section."""
-    st = _state
-    gs = st.game.game_state
-
-    if st.winner or gs.current_team != st.human_color:
-        return []
-
-    avail = _available_pieces(gs, st.human_color)
-    must_q = _must_place_queen(gs, st.human_color)
-
-    if not avail:
-        return []
-
-    children = [html.H4("Place a piece", style={"marginBottom": "6px"})]
-    for pt, cnt in sorted(avail.items()):
-        icon = PIECE_ICONS.get(pt, "?")
-        is_active = (
-            st.action_mode == "place_target" and st.selected_piece_type == pt
-        )
-        # If must place queen, disable non-queen buttons
-        disabled = must_q and pt != "queenbee"
-        btn_style = {
-            "display": "block",
-            "width": "100%",
-            "marginBottom": "6px",
-            "padding": "8px",
-            "cursor": "not-allowed" if disabled else "pointer",
-            "border": "2px solid " + ("#00AA44" if is_active else "#ccc"),
-            "borderRadius": "6px",
-            "background": "#e8ffe8" if is_active else ("#f0f0f0" if disabled else "#f9f9f9"),
-            "fontSize": "15px",
-            "textAlign": "left",
-            "opacity": "0.45" if disabled else "1",
-        }
-        children.append(html.Button(
-            f"{icon} {pt.capitalize()} ×{cnt}",
-            id={"type": "piece-btn", "piece_type": pt},
-            style=btn_style,
-            n_clicks=0,
-            disabled=disabled,
-        ))
-    return children
-
-
-def _build_status_section() -> list:
-    """Return hint / status children for the side panel."""
-    st = _state
-    if st.game is None:
-        return []
-
-    gs = st.game.game_state
-    children = []
-
-    # Status message
-    if st.status_msg:
-        children.append(html.Div(
-            st.status_msg,
-            style={"marginBottom": "10px", "color": "#333", "fontStyle": "italic"},
-        ))
-
-    # Must-place-queen warning
-    if not st.winner and gs.current_team == st.human_color:
-        if _must_place_queen(gs, st.human_color):
-            children.append(html.Div(
-                "⚠ You must place your Queen this turn!",
-                style={"color": "#cc0000", "fontWeight": "bold", "marginBottom": "10px"},
-            ))
-
-    # Hint text
-    if not st.winner:
-        if gs.current_team == st.human_color:
-            if st.action_mode == "idle":
-                hint = (
-                    "Click a 🔵 bordered piece on the board to move it, "
-                    "or choose a piece type above to place."
-                )
-            elif st.action_mode == "move_target":
-                hint = "Click a green ✅ hex to move the selected piece there."
-            else:
-                hint = "Click a green ✅ hex to place the selected piece there."
-        else:
-            hint = "AI is thinking…"
-        children.append(html.P(hint, style={"marginTop": "10px", "color": "#666",
-                                             "fontSize": "13px"}))
-
-    return children
-
-
-# ---------------------------------------------------------------------------
-# Dash application layout
-# ---------------------------------------------------------------------------
-
-app = Dash(__name__, title="HiveSim – Play vs AI")
-app.layout = html.Div(
-    style={
-        "display": "flex",
-        "flexDirection": "row",
-        "fontFamily": "sans-serif",
-        "padding": "16px",
-        "gap": "24px",
-    },
-    children=[
-        # Board graph (left)
-        dcc.Graph(
-            id="board-graph",
-            figure=go.Figure(),
-            config={"displayModeBar": False},
-            style={"flex": "0 0 auto"},
-        ),
-        # Side panel (right) – static structure, dynamic children
-        html.Div(
-            style={
-                "flex": "1 1 220px",
-                "maxWidth": "260px",
-                "borderLeft": "1px solid #ddd",
-                "paddingLeft": "20px",
-                "overflowY": "auto",
-            },
-            children=[
-                html.H2("Hive", style={"marginTop": "0"}),
-                # Piece placement buttons (dynamic)
-                html.Div(id="piece-buttons"),
-                # Cancel button – always in DOM, visibility controlled by callbacks
-                html.Button(
-                    "✕ Cancel selection",
-                    id="cancel-btn",
-                    n_clicks=0,
-                    style=_STYLE_CANCEL_HIDDEN,
-                ),
-                # Status / hints (dynamic)
-                html.Div(id="status-section"),
-            ],
-        ),
-        # Hidden stores
-        dcc.Store(id="trigger-store", data=0),
-    ],
-)
-
-
-# ---------------------------------------------------------------------------
-# Shared output refresh helper
-# ---------------------------------------------------------------------------
-
-def _refresh_outputs():
-    """Return (figure, piece_buttons, cancel_style, status_section)."""
-    st = _state
-    if st.game is None:
-        return go.Figure(), [], _STYLE_CANCEL_HIDDEN, []
-    cancel_style = _STYLE_CANCEL_SHOWN if st.action_mode != "idle" else _STYLE_CANCEL_HIDDEN
-    return (
-        build_figure(),
-        _build_piece_buttons(),
-        cancel_style,
-        _build_status_section(),
-    )
-
-
-# ---------------------------------------------------------------------------
-# Turn helpers
-# ---------------------------------------------------------------------------
-
-def _apply_turn(turn: Turn) -> Optional[str]:
-    """Apply *turn* to the global game. Returns winner or None."""
-    try:
-        _state.game.apply_turn(turn)
-    except Exception as exc:
-        _state.status_msg = f"Invalid move: {exc}"
-        return None
-    return _state.game.game_state.check_win_condition()
-
-
-def _do_ai_turn() -> None:
-    """Make the AI play one turn."""
-    st = _state
-    gs = st.game.game_state
+def _run_ai(state: AppState) -> None:
+    """Background thread: let AI pick and apply its move, then post AI_DONE."""
+    gs = state.game.game_state
 
     ql = gs.check_queen_placement_loss()
     if ql:
-        st.winner = ql
+        state.winner = ql
+        pygame.event.post(pygame.event.Event(AI_DONE))
         return
 
-    if st.ai_delay > 0:
-        time.sleep(st.ai_delay)
+    if state.ai_delay > 0:
+        time.sleep(state.ai_delay)
 
-    ai_color = "black" if st.human_color == "white" else "white"
-    ai_turn = st.ai_bot.get_move(gs)
+    ai_color = "black" if state.human_color == "white" else "white"
+    ai_turn = state.ai_bot.get_move(gs)
 
     origin_coord = None
     if ai_turn.action_type == "move" and ai_turn.piece_id:
@@ -571,240 +259,610 @@ def _do_ai_turn() -> None:
         if piece and piece.hex_coordinates:
             origin_coord = piece.hex_coordinates
 
-    winner = _apply_turn(ai_turn)
+    try:
+        state.game.apply_turn(ai_turn)
+    except Exception as exc:
+        state.status_msg = f"AI error: {exc}"
+        state.ai_thinking = False
+        pygame.event.post(pygame.event.Event(AI_DONE))
+        return
 
-    st.last_move_arrow = (
+    state.last_move_arrow = (
         (origin_coord, ai_turn.target_coordinates, ai_color)
         if ai_turn.action_type == "move" and origin_coord and ai_turn.target_coordinates
         else None
     )
 
+    winner = gs.check_win_condition()
     if winner:
-        st.winner = winner
+        state.winner = winner
+
+    state.ai_thinking = False
+    pygame.event.post(pygame.event.Event(AI_DONE))
+
+
+def trigger_ai(state: AppState) -> None:
+    """Start the AI background thread if it's the AI's turn and it isn't already running."""
+    if state.ai_thinking or state.winner:
+        return
+    gs = state.game.game_state
+    ai_color = "black" if state.human_color == "white" else "white"
+    if gs.current_team != ai_color:
+        return
+    state.ai_thinking = True
+    threading.Thread(target=_run_ai, args=(state,), daemon=True).start()
 
 
 # ---------------------------------------------------------------------------
-# Callbacks
+# Drawing helpers
 # ---------------------------------------------------------------------------
 
-@app.callback(
-    Output("board-graph", "figure"),
-    Output("piece-buttons", "children"),
-    Output("cancel-btn", "style"),
-    Output("status-section", "children"),
-    Input("board-graph", "clickData"),
-    Input("trigger-store", "data"),
-    prevent_initial_call=False,
-)
-def on_board_click_or_trigger(click_data, _trigger):
-    """Handle board clicks and page-load / side-panel triggers."""
-    st = _state
-    ctx = callback_context
+def _compute_board_offset(state: AppState) -> Tuple[float, float]:
+    """Auto-centre the hex board based on which hexes are visible."""
+    gs = state.game.game_state
+    all_coords: List[HexCoordinate] = []
+    for piece in gs.board_state.pieces.values():
+        if piece.location == "board" and piece.hex_coordinates:
+            all_coords.append(piece.hex_coordinates)
+    for coord in gs.get_available_spaces():
+        all_coords.append(coord)
 
-    if not ctx.triggered or "trigger-store" in ctx.triggered[0]["prop_id"]:
-        return _refresh_outputs()
+    if not all_coords:
+        return BOARD_W / 2, WIN_H / 2
 
-    if click_data is None:
-        raise PreventUpdate
+    # Use hex_to_screen with a zero origin to get raw pixel positions
+    pixels = [hex_to_screen(c.q, c.r, HEX_SIZE, 0, 0) for c in all_coords]
+    xs = [p[0] for p in pixels]
+    ys = [p[1] for p in pixels]
+    cx = (max(xs) + min(xs)) / 2
+    cy = (max(ys) + min(ys)) / 2
+    return BOARD_W / 2 - cx, WIN_H / 2 - cy
 
-    # Parse clicked hex coordinate
-    point = click_data["points"][0]
-    cd = point.get("customdata")
-    if cd is None:
-        raise PreventUpdate
-    try:
-        q, r, s = int(cd[0]), int(cd[1]), int(cd[2])
-    except (TypeError, IndexError, ValueError):
-        raise PreventUpdate
-    clicked = HexCoordinate(q=q, r=r, s=s)
 
-    gs = st.game.game_state
+def draw_hex_filled(surface: pygame.Surface, pts: List, fill: Tuple,
+                    border: Tuple, width: int = 2) -> None:
+    pygame.draw.polygon(surface, fill, pts)
+    pygame.draw.polygon(surface, border, pts, width)
 
-    if st.winner:
-        raise PreventUpdate
 
-    # Only process clicks on the human's turn
-    if gs.current_team != st.human_color:
-        raise PreventUpdate
+def draw_board(surface: pygame.Surface, state: AppState,
+               font_sm: pygame.font.Font, font_md: pygame.font.Font) -> None:
+    """Draw all hexes, pieces, and highlights onto *surface*."""
+    gs = state.game.game_state
+    ox, oy = state.board_offset
+    vt_set = {(t.q, t.r, t.s) for t in state.valid_targets}
 
+    # Group pieces by hex coord (stacks)
+    coord_to_stack: dict = {}
+    for pid, piece in gs.board_state.pieces.items():
+        if piece.location != "board" or piece.hex_coordinates is None:
+            continue
+        key = (piece.hex_coordinates.q, piece.hex_coordinates.r, piece.hex_coordinates.s)
+        coord_to_stack.setdefault(key, []).append((piece.z_level, pid, piece))
+    for k in coord_to_stack:
+        coord_to_stack[k].sort(key=lambda x: x[0])
+
+    occupied = set(coord_to_stack.keys())
+
+    # Movable pieces when it's the human's idle turn
+    movable_ids: set = set()
+    if (not state.winner and not state.ai_thinking
+            and gs.current_team == state.human_color
+            and state.action_mode == "idle"):
+        movable_ids = _movable_piece_ids(gs, state.human_color)
+
+    board_rect = pygame.Rect(0, 0, BOARD_W, WIN_H)
+
+    # One shared SRCALPHA surface reused for all semi-transparent overlays
+    overlay = pygame.Surface((WIN_W, WIN_H), pygame.SRCALPHA)
+
+    # ── Empty / target hexes ────────────────────────────────────────────────
+    for coord in gs.get_available_spaces():
+        key = (coord.q, coord.r, coord.s)
+        if key in occupied:
+            continue
+        cx, cy = hex_to_screen(coord.q, coord.r, HEX_SIZE, ox, oy)
+        if not board_rect.collidepoint(cx, cy):
+            continue
+        pts = hex_vertices(cx, cy, HEX_SIZE - 2)
+        is_target = key in vt_set
+        if is_target:
+            overlay.fill((0, 0, 0, 0))
+            pygame.draw.polygon(overlay, (0, 200, 80, 100), pts)
+            surface.blit(overlay, (0, 0))
+            pygame.draw.polygon(surface, VALID_BORDER, pts, 3)
+        else:
+            draw_hex_filled(surface, pts, EMPTY_HEX_FILL, EMPTY_HEX_BORDER, 1)
+
+        # Coordinate label
+        lbl = font_sm.render(f"{coord.q},{coord.r}", True, (160, 160, 160))
+        surface.blit(lbl, (cx - lbl.get_width() // 2, cy - lbl.get_height() // 2))
+
+    # ── Board pieces ────────────────────────────────────────────────────────
+    for key, stack in coord_to_stack.items():
+        coord = HexCoordinate(q=key[0], r=key[1], s=key[2])
+        cx, cy = hex_to_screen(coord.q, coord.r, HEX_SIZE, ox, oy)
+        if not board_rect.collidepoint(cx, cy):
+            continue
+
+        is_target_hex = key in vt_set
+
+        for z, pid, piece in stack:
+            ox2, oy2 = cx + z * 8, cy + z * 8  # stack offset
+            size = HEX_SIZE - 2 - z * 3
+            pts = hex_vertices(ox2, oy2, size)
+
+            is_selected = pid == state.selected_piece_id
+            is_top = z == stack[-1][0]
+            is_movable = pid in movable_ids
+
+            # Fill & border colours
+            base_fill = WHITE_FILL if piece.team == "white" else BLACK_FILL
+            base_border = WHITE_BORDER if piece.team == "white" else BLACK_BORDER
+
+            if is_selected:
+                fill, border, bw = SEL_FILL, SEL_BORDER, 4
+            elif is_target_hex:
+                overlay.fill((0, 0, 0, 0))
+                pygame.draw.polygon(overlay, (0, 200, 80, 100), pts)
+                surface.blit(overlay, (0, 0))
+                fill, border, bw = base_fill, VALID_BORDER, 3
+            elif is_movable and is_top:
+                fill, border, bw = base_fill, MOVABLE_BORDER, 3
+            else:
+                fill, border, bw = base_fill, base_border, 2
+
+            draw_hex_filled(surface, pts, fill, border, bw)
+
+            # Piece label
+            piece_type = piece.__class__.__name__.lower()
+            lbl_str = PIECE_LABELS.get(piece_type, piece_type[:3].upper())
+            lbl_color = (30, 30, 30) if piece.team == "white" else (220, 220, 220)
+            if not is_top:
+                lbl_color = (100, 100, 100) if piece.team == "white" else (140, 140, 140)
+            fnt = font_md if is_top else font_sm
+            lbl = fnt.render(lbl_str, True, lbl_color)
+            surface.blit(lbl, (ox2 - lbl.get_width() // 2, oy2 - lbl.get_height() // 2))
+
+        # Coordinate label (top piece)
+        top_z, _, top_piece = stack[-1]
+        ox2, oy2 = cx + top_z * 8, cy + top_z * 8
+        coord_str = f"{coord.q},{coord.r}"
+        if len(stack) > 1:
+            coord_str += f"[z{top_z}]"
+        lbl_color = (80, 80, 80) if top_piece.team == "white" else (180, 180, 180)
+        lbl = font_sm.render(coord_str, True, lbl_color)
+        surface.blit(lbl, (ox2 - lbl.get_width() // 2, oy2 + HEX_SIZE - 20))
+
+    # ── Last-move arrow ─────────────────────────────────────────────────────
+    if state.last_move_arrow:
+        origin, dest, team = state.last_move_arrow
+        sx, sy = hex_to_screen(origin.q, origin.r, HEX_SIZE, ox, oy)
+        ex, ey = hex_to_screen(dest.q, dest.r, HEX_SIZE, ox, oy)
+        arrow_col = (100, 100, 230) if team == "white" else (200, 100, 100)
+        pygame.draw.line(surface, arrow_col, (int(sx), int(sy)), (int(ex), int(ey)), 3)
+        # Arrowhead
+        angle = math.atan2(ey - sy, ex - sx)
+        for da in (0.5, -0.5):
+            ax = ex - 18 * math.cos(angle + da)
+            ay = ey - 18 * math.sin(angle + da)
+            pygame.draw.line(surface, arrow_col, (int(ex), int(ey)), (int(ax), int(ay)), 3)
+
+
+# ---------------------------------------------------------------------------
+# Side-panel drawing + button hit-testing
+# ---------------------------------------------------------------------------
+
+class Button:
+    """Simple rectangular button."""
+
+    def __init__(self, rect: pygame.Rect, label: str,
+                 data=None, disabled: bool = False, active: bool = False):
+        self.rect = rect
+        self.label = label
+        self.data = data       # arbitrary payload (e.g. piece_type string)
+        self.disabled = disabled
+        self.active = active
+
+    def draw(self, surface: pygame.Surface, font: pygame.font.Font,
+             mouse_pos: Tuple[int, int]) -> None:
+        hovered = self.rect.collidepoint(mouse_pos) and not self.disabled
+        if self.disabled:
+            bg = BTN_DISABLED
+            tc = BTN_TEXT_DISABLED
+        elif self.active:
+            bg = BTN_ACTIVE
+            tc = BTN_TEXT
+        elif hovered:
+            bg = BTN_HOVER
+            tc = BTN_TEXT
+        else:
+            bg = BTN_NORMAL
+            tc = BTN_TEXT
+        pygame.draw.rect(surface, bg, self.rect, border_radius=6)
+        pygame.draw.rect(surface, (160, 160, 180), self.rect, 2, border_radius=6)
+        lbl = font.render(self.label, True, tc)
+        surface.blit(lbl, (self.rect.x + 10, self.rect.centery - lbl.get_height() // 2))
+
+    def hit(self, pos: Tuple[int, int]) -> bool:
+        return self.rect.collidepoint(pos) and not self.disabled
+
+
+def build_panel_buttons(state: AppState, panel_y_start: int,
+                        btn_w: int, btn_h: int) -> List[Button]:
+    """Build the list of clickable buttons for the side panel."""
+    if state.game is None:
+        return []
+    gs = state.game.game_state
+    buttons: List[Button] = []
+    y = panel_y_start
+    px = PANEL_X + 12
+
+    if not state.winner and not state.ai_thinking and gs.current_team == state.human_color:
+        avail = _available_pieces(gs, state.human_color)
+        must_q = _must_place_queen(gs, state.human_color)
+
+        for pt, cnt in sorted(avail.items()):
+            disabled = must_q and pt != "queenbee"
+            is_active = (state.action_mode == "place_target"
+                         and state.selected_piece_type == pt)
+            label = f"{PIECE_LABELS.get(pt, pt.upper())}  x{cnt}"
+            buttons.append(Button(
+                rect=pygame.Rect(px, y, btn_w, btn_h),
+                label=label,
+                data=("place", pt),
+                disabled=disabled,
+                active=is_active,
+            ))
+            y += btn_h + 6
+
+    # Cancel button
+    if state.action_mode != "idle":
+        y += 8
+        buttons.append(Button(
+            rect=pygame.Rect(px, y, btn_w, btn_h),
+            label="✕  Cancel",
+            data=("cancel", None),
+            active=False,
+        ))
+
+    return buttons
+
+
+def draw_panel(surface: pygame.Surface, state: AppState,
+               buttons: List[Button], font_sm: pygame.font.Font,
+               font_md: pygame.font.Font, font_lg: pygame.font.Font,
+               mouse_pos: Tuple[int, int]) -> None:
+    """Draw the right-side panel."""
+    # Background
+    panel_rect = pygame.Rect(PANEL_X, 0, PANEL_W, WIN_H)
+    pygame.draw.rect(surface, PANEL_BG, panel_rect)
+    pygame.draw.line(surface, (190, 190, 200), (PANEL_X, 0), (PANEL_X, WIN_H), 2)
+
+    y = 16
+    # Title
+    title = font_lg.render("Hive", True, PANEL_TEXT)
+    surface.blit(title, (PANEL_X + 12, y))
+    y += title.get_height() + 6
+
+    # Turn info
+    gs = state.game.game_state
+    if state.winner:
+        if state.winner == state.human_color:
+            info = "You WIN! 🎉"
+            col = (0, 140, 0)
+        else:
+            info = f"AI wins ({state.winner.upper()})"
+            col = WARN_COLOR
+    elif state.ai_thinking:
+        info = f"Turn {gs.turn}  –  AI thinking…"
+        col = (100, 100, 180)
+    elif gs.current_team == state.human_color:
+        info = f"Turn {gs.turn}  –  Your turn ({state.human_color.upper()})"
+        col = (0, 120, 0)
+    else:
+        info = f"Turn {gs.turn}  –  AI's turn ({gs.current_team.upper()})"
+        col = (100, 100, 180)
+    lbl = font_sm.render(info, True, col)
+    surface.blit(lbl, (PANEL_X + 12, y))
+    y += lbl.get_height() + 12
+
+    # Must-place-queen warning
+    if (not state.winner and not state.ai_thinking
+            and gs.current_team == state.human_color
+            and _must_place_queen(gs, state.human_color)):
+        warn = font_sm.render("⚠ Must place Queen now!", True, WARN_COLOR)
+        surface.blit(warn, (PANEL_X + 12, y))
+        y += warn.get_height() + 8
+
+    # Section heading: place piece
+    if (not state.winner and not state.ai_thinking
+            and gs.current_team == state.human_color):
+        hdr = font_sm.render("Place a piece:", True, PANEL_TEXT)
+        surface.blit(hdr, (PANEL_X + 12, y))
+        y += hdr.get_height() + 6
+
+    # Piece buttons
+    for btn in buttons:
+        btn.draw(surface, font_sm, mouse_pos)
+
+    # Status message
+    y_status = WIN_H - 110
+    if state.status_msg:
+        for line in state.status_msg.split("\n"):
+            lbl = font_sm.render(line, True, STATUS_COLOR)
+            surface.blit(lbl, (PANEL_X + 12, y_status))
+            y_status += lbl.get_height() + 2
+
+    # Hint text
+    y_hint = WIN_H - 80
+    if not state.winner:
+        if state.ai_thinking:
+            hint = "AI is calculating…"
+        elif gs.current_team == state.human_color:
+            if state.action_mode == "idle":
+                hint = "Click a blue-bordered piece to move"
+                hint2 = "or pick a type above to place."
+            elif state.action_mode == "move_target":
+                hint = "Click a green hex to move there."
+                hint2 = ""
+            else:
+                hint = "Click a green hex to place."
+                hint2 = ""
+        else:
+            hint, hint2 = "", ""
+
+        if hint:
+            h1 = font_sm.render(hint, True, (110, 110, 110))
+            surface.blit(h1, (PANEL_X + 12, y_hint))
+        if state.action_mode == "idle" and not state.ai_thinking:
+            if gs.current_team == state.human_color:
+                h2 = font_sm.render(hint2, True, (110, 110, 110))
+                surface.blit(h2, (PANEL_X + 12, y_hint + h1.get_height() + 2))
+
+    # Key legend
+    y_leg = WIN_H - 30
+    leg = font_sm.render("ESC / R-click: cancel selection", True, (150, 150, 150))
+    surface.blit(leg, (PANEL_X + 12, y_leg))
+
+
+# ---------------------------------------------------------------------------
+# Human click handling
+# ---------------------------------------------------------------------------
+
+def handle_board_click(mx: int, my: int, state: AppState) -> None:
+    """Process a left click at screen position (mx, my) on the board area."""
+    gs = state.game.game_state
+    if state.winner or state.ai_thinking or gs.current_team != state.human_color:
+        return
+
+    ox, oy = state.board_offset
+    clicked = screen_to_hex(mx, my, HEX_SIZE, ox, oy)
     ckey = (clicked.q, clicked.r, clicked.s)
-    vt_set = {(t.q, t.r, t.s) for t in st.valid_targets}
+    vt_set = {(t.q, t.r, t.s) for t in state.valid_targets}
 
-    # ── Move-target mode ──────────────────────────────────────────────────
-    if st.action_mode == "move_target":
+    # ── Move-target mode ─────────────────────────────────────────────────────
+    if state.action_mode == "move_target":
         if ckey in vt_set:
+            pid = state.selected_piece_id
             turn = Turn(
-                player=st.human_color,
-                piece_id=st.selected_piece_id,
+                player=state.human_color,
+                piece_id=pid,
                 action_type="move",
                 target_coordinates=clicked,
             )
-            winner = _apply_turn(turn)
-            st.action_mode = "idle"
-            st.selected_piece_id = None
-            st.valid_targets = []
-            st.last_move_arrow = None
-            st.status_msg = ""
+            try:
+                state.game.apply_turn(turn)
+            except Exception as exc:
+                state.status_msg = f"Invalid move: {exc}"
+                return
+            state.action_mode = "idle"
+            state.selected_piece_id = None
+            state.valid_targets = []
+            state.last_move_arrow = None
+            state.status_msg = ""
+            winner = gs.check_win_condition()
             if winner:
-                st.winner = winner
+                state.winner = winner
+            elif gs.check_queen_placement_loss():
+                state.winner = gs.check_queen_placement_loss()
             else:
-                ql = gs.check_queen_placement_loss()
-                if ql:
-                    st.winner = ql
-                else:
-                    _do_ai_turn()
+                trigger_ai(state)
         else:
-            # Clicking a different movable human piece → re-select
-            pid = _get_piece_id_at(clicked, gs)
+            # Maybe clicking a different movable piece → re-select
+            pid = _get_top_piece_id(clicked, gs)
             piece = gs.all_pieces.get(pid) if pid else None
-            if piece and piece.team == st.human_color and piece.location == "board":
+            if piece and piece.team == state.human_color and piece.location == "board":
                 targets = _valid_move_targets(pid, gs)
                 if targets:
-                    st.selected_piece_id = pid
-                    st.valid_targets = targets
-                    st.status_msg = (
+                    state.selected_piece_id = pid
+                    state.valid_targets = targets
+                    state.status_msg = (
                         f"Selected {piece.__class__.__name__} – "
                         f"{len(targets)} valid target(s)"
                     )
-                else:
-                    st.action_mode = "idle"
-                    st.selected_piece_id = None
-                    st.valid_targets = []
-                    st.status_msg = "That piece has no valid moves right now."
-            else:
-                # Clicked empty/opponent hex → cancel
-                st.action_mode = "idle"
-                st.selected_piece_id = None
-                st.valid_targets = []
-                st.status_msg = ""
+                    return
+            # Cancel
+            state.action_mode = "idle"
+            state.selected_piece_id = None
+            state.valid_targets = []
+            state.status_msg = ""
 
-    # ── Place-target mode ─────────────────────────────────────────────────
-    elif st.action_mode == "place_target":
+    # ── Place-target mode ────────────────────────────────────────────────────
+    elif state.action_mode == "place_target":
         if ckey in vt_set:
-            player = gs.white_player if st.human_color == "white" else gs.black_player
-            pt_cls = st.selected_piece_type
+            player = gs.white_player if state.human_color == "white" else gs.black_player
+            pt_cls = state.selected_piece_type
             pid = next(
                 (p.piece_id for p in player.pieces
                  if p.__class__.__name__.lower() == pt_cls and p.location == "offboard"),
                 None,
             )
             if pid is None:
-                st.status_msg = "No piece available of that type."
-                return _refresh_outputs()
-
+                state.status_msg = "No piece of that type available."
+                return
             turn = Turn(
-                player=st.human_color,
+                player=state.human_color,
                 piece_id=pid,
-                piece_type=st.selected_piece_type,
+                piece_type=state.selected_piece_type,
                 action_type="place",
                 target_coordinates=clicked,
             )
-            winner = _apply_turn(turn)
-            st.action_mode = "idle"
-            st.selected_piece_type = None
-            st.valid_targets = []
-            st.last_move_arrow = None
-            st.status_msg = ""
+            try:
+                state.game.apply_turn(turn)
+            except Exception as exc:
+                state.status_msg = f"Invalid placement: {exc}"
+                return
+            state.action_mode = "idle"
+            state.selected_piece_type = None
+            state.valid_targets = []
+            state.last_move_arrow = None
+            state.status_msg = ""
+            winner = gs.check_win_condition()
             if winner:
-                st.winner = winner
+                state.winner = winner
+            elif gs.check_queen_placement_loss():
+                state.winner = gs.check_queen_placement_loss()
             else:
-                ql = gs.check_queen_placement_loss()
-                if ql:
-                    st.winner = ql
-                else:
-                    _do_ai_turn()
+                trigger_ai(state)
         else:
-            # Clicked outside valid targets → cancel placement
-            st.action_mode = "idle"
-            st.selected_piece_type = None
-            st.valid_targets = []
-            st.status_msg = ""
+            # Cancel
+            state.action_mode = "idle"
+            state.selected_piece_type = None
+            state.valid_targets = []
+            state.status_msg = ""
 
-    # ── Idle – try selecting a board piece to move ─────────────────────────
+    # ── Idle – try selecting a board piece to move ────────────────────────────
     else:
-        pid = _get_piece_id_at(clicked, gs)
+        pid = _get_top_piece_id(clicked, gs)
         piece = gs.all_pieces.get(pid) if pid else None
-        if piece and piece.team == st.human_color and piece.location == "board":
+        if piece and piece.team == state.human_color and piece.location == "board":
             targets = _valid_move_targets(pid, gs)
             if targets:
-                st.action_mode = "move_target"
-                st.selected_piece_id = pid
-                st.valid_targets = targets
-                st.status_msg = (
+                state.action_mode = "move_target"
+                state.selected_piece_id = pid
+                state.valid_targets = targets
+                state.status_msg = (
                     f"Selected {piece.__class__.__name__} – "
                     f"{len(targets)} valid target(s)"
                 )
             else:
-                st.status_msg = "That piece has no valid moves right now."
-
-    return _refresh_outputs()
+                state.status_msg = "That piece has no valid moves right now."
 
 
-@app.callback(
-    Output("trigger-store", "data"),
-    Input({"type": "piece-btn", "piece_type": ALL}, "n_clicks"),
-    Input("cancel-btn", "n_clicks"),
-    State("trigger-store", "data"),
-    prevent_initial_call=True,
-)
-def on_piece_or_cancel(piece_btn_clicks, _cancel_clicks, trigger):
-    """Handle piece-type selection buttons and the Cancel button."""
-    st = _state
-    ctx = callback_context
-    if not ctx.triggered:
-        raise PreventUpdate
+def handle_panel_click(mx: int, my: int, state: AppState,
+                       buttons: List[Button]) -> None:
+    """Process a left click on the side panel area."""
+    for btn in buttons:
+        if btn.hit((mx, my)):
+            kind, payload = btn.data
+            if kind == "cancel":
+                state.action_mode = "idle"
+                state.selected_piece_id = None
+                state.selected_piece_type = None
+                state.valid_targets = []
+                state.status_msg = ""
+            elif kind == "place":
+                pt = payload
+                gs = state.game.game_state
+                if _must_place_queen(gs, state.human_color):
+                    pt = "queenbee"
+                targets = _valid_placement_targets(pt, gs)
+                if targets:
+                    state.action_mode = "place_target"
+                    state.selected_piece_type = pt
+                    state.selected_piece_id = None
+                    state.valid_targets = targets
+                    state.status_msg = (
+                        f"Placing {pt.capitalize()} – "
+                        f"{len(targets)} valid hex(es)"
+                    )
+                else:
+                    state.status_msg = f"No valid spots for {pt}."
+            break
 
-    prop_id = ctx.triggered[0]["prop_id"]
 
-    # ── Cancel ────────────────────────────────────────────────────────────
-    if "cancel-btn" in prop_id:
-        st.action_mode = "idle"
-        st.selected_piece_id = None
-        st.selected_piece_type = None
-        st.valid_targets = []
-        st.status_msg = ""
-        return trigger + 1
+# ---------------------------------------------------------------------------
+# Main game loop
+# ---------------------------------------------------------------------------
 
-    # ── Piece button ──────────────────────────────────────────────────────
-    try:
-        btn_id = json.loads(prop_id.split(".")[0])
-        pt = btn_id.get("piece_type")
-    except Exception:
-        raise PreventUpdate
+def run(state: AppState) -> None:
+    pygame.init()
+    screen = pygame.display.set_mode((WIN_W, WIN_H))
+    pygame.display.set_caption("HiveSim – Play vs AI")
 
-    if pt is None:
-        raise PreventUpdate
+    # Fonts (fallback to system default if no monospace found)
+    font_sm = pygame.font.SysFont("monospace", 14)
+    font_md = pygame.font.SysFont("monospace", 18, bold=True)
+    font_lg = pygame.font.SysFont("monospace", 28, bold=True)
 
-    gs = st.game.game_state
-    if gs.current_team != st.human_color or st.winner:
-        raise PreventUpdate
+    clock = pygame.time.Clock()
 
-    # Must-place-queen rule overrides user choice
-    effective_pt = "queenbee" if _must_place_queen(gs, st.human_color) else pt
+    # If AI goes first (human plays black), trigger immediately
+    trigger_ai(state)
 
-    targets = _valid_placement_targets(effective_pt, gs)
-    if targets:
-        st.action_mode = "place_target"
-        st.selected_piece_type = effective_pt
-        st.selected_piece_id = None
-        st.valid_targets = targets
-        st.status_msg = (
-            f"Placing {effective_pt.capitalize()} – "
-            f"{len(targets)} valid hex(es)"
-        )
-    else:
-        st.action_mode = "idle"
-        st.selected_piece_type = None
-        st.valid_targets = []
-        st.status_msg = f"No valid placement spots for {effective_pt}."
+    PANEL_BTN_W = PANEL_W - 24
+    PANEL_BTN_H = 34
+    PANEL_BTN_Y_START = 120  # approximate; recomputed each frame
 
-    return trigger + 1
+    running = True
+    while running:
+        mouse_pos = pygame.mouse.get_pos()
+
+        # Recompute board offset so the board stays centred
+        state.board_offset = _compute_board_offset(state)
+
+        # Build side-panel buttons (recomputed each frame – cheap)
+        buttons = build_panel_buttons(state, PANEL_BTN_Y_START, PANEL_BTN_W, PANEL_BTN_H)
+
+        # ── Event handling ─────────────────────────────────────────────────
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+            elif event.type == AI_DONE:
+                # AI thread finished; just redraw (state already updated)
+                pass
+
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    state.action_mode = "idle"
+                    state.selected_piece_id = None
+                    state.selected_piece_type = None
+                    state.valid_targets = []
+                    state.status_msg = ""
+
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 3:   # right-click → cancel
+                    state.action_mode = "idle"
+                    state.selected_piece_id = None
+                    state.selected_piece_type = None
+                    state.valid_targets = []
+                    state.status_msg = ""
+
+                elif event.button == 1:  # left-click
+                    mx, my = event.pos
+                    if mx < BOARD_W:
+                        handle_board_click(mx, my, state)
+                    else:
+                        handle_panel_click(mx, my, state, buttons)
+
+        # ── Drawing ────────────────────────────────────────────────────────
+        screen.fill(BOARD_BG, (0, 0, BOARD_W, WIN_H))
+        screen.fill(PANEL_BG, (PANEL_X, 0, PANEL_W, WIN_H))
+
+        draw_board(screen, state, font_sm, font_md)
+        draw_panel(screen, state, buttons, font_sm, font_md, font_lg, mouse_pos)
+
+        pygame.display.flip()
+        clock.tick(30)
+
+    pygame.quit()
 
 
 # ---------------------------------------------------------------------------
 # CLI entry-point
 # ---------------------------------------------------------------------------
-
 
 def load_bot_class(class_path: str):
     """Load a bot class from a dotted module path, e.g. 'mymodule.MyBot'."""
@@ -817,14 +875,14 @@ def load_bot_class(class_path: str):
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Play Hive against an AI opponent in your browser",
+        description="Play Hive against an AI opponent in a pygame window",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   python play_vs_ai.py
   python play_vs_ai.py --human-color black
   python play_vs_ai.py --ai mymodule.MyBot
-  python play_vs_ai.py --port 8080 --delay 0.2
+  python play_vs_ai.py --delay 0.2
         """,
     )
     parser.add_argument(
@@ -837,10 +895,6 @@ Examples:
             "Dotted path to a custom AI bot class, e.g. 'mymodule.MyBot'. "
             "Must accept team= and name= keyword args. Default: RandomBot."
         ),
-    )
-    parser.add_argument(
-        "--port", type=int, default=8050,
-        help="Port for the Dash web server (default: 8050)",
     )
     parser.add_argument(
         "--delay", type=float, default=0.5,
@@ -862,16 +916,16 @@ Examples:
     if ai_bot is None:
         ai_bot = RandomBot(team=ai_color, name="RandomBot")
 
-    _state.reset(human_color=args.human_color, ai_bot=ai_bot)
-    _state.ai_delay = args.delay
+    state = AppState()
+    state.reset(human_color=args.human_color, ai_bot=ai_bot)
+    state.ai_delay = args.delay
 
-    print("\nHiveSim – Play vs AI")
+    print(f"HiveSim – Play vs AI")
     print(f"  You   : {args.human_color.upper()}")
     print(f"  AI    : {ai_bot.name} ({ai_color.upper()})")
-    print(f"  Open  : http://localhost:{args.port}")
-    print("  Press Ctrl-C to quit.\n")
+    print(f"  Window: {WIN_W}×{WIN_H}  |  ESC or R-click to cancel selection")
 
-    app.run(debug=False, port=args.port)
+    run(state)
 
 
 if __name__ == "__main__":
