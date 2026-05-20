@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import random
 from typing import List
-from hivesim.game import Turn, MovementHelper
+from hivesim.game import Turn, MovementHelper, QueenBee
 
 
 class BaseBot(ABC):    
@@ -252,3 +252,131 @@ class RandomBot(BaseBot):
                                action_type: str, game_state):
         """Randomly select an available space."""
         return random.choice(available_spaces)
+
+
+class HumanPlayer(BaseBot):
+    """A bot that prompts a human player for input via the terminal."""
+
+    def __init__(self, team: str, name: str = "Human"):
+        super().__init__(team, name)
+
+    # These abstract methods are required by BaseBot but are not used because
+    # HumanPlayer overrides get_move() entirely.
+    def choose_action_type(self, can_move: bool, can_place: bool, game_state) -> str:  # pragma: no cover
+        pass
+
+    def choose_piece_type(self, available_pieces: dict, movable_pieces: dict,
+                          action_type: str, game_state) -> str:  # pragma: no cover
+        pass
+
+    def choose_piece_id(self, piece_ids: List[str], piece_type: str,
+                        action_type: str, game_state) -> str:  # pragma: no cover
+        pass
+
+    def choose_target_location(self, available_spaces: List, piece_type: str,
+                               action_type: str, game_state):  # pragma: no cover
+        pass
+
+    def get_move(self, game_state) -> 'Turn':
+        """Enumerate all valid moves and let the human choose via numbered input."""
+        available_pieces = self.get_available_pieces(game_state)
+        movable_pieces = game_state.get_movable_pieces(game_state)
+
+        if not available_pieces and not movable_pieces:
+            print(f"\n{self.team.capitalize()} has no valid moves. Forfeiting.")
+            return Turn(player=self.team, action_type='forfeit')
+
+        must_place_queen = self.must_place_queen(game_state)
+        valid_turns: List[Turn] = []
+        descriptions: List[str] = []
+
+        if must_place_queen:
+            available_spaces = game_state.get_available_spaces()
+            for space in available_spaces:
+                test_turn = Turn(
+                    player=self.team, piece_type='queenbee',
+                    action_type='place', target_coordinates=space
+                )
+                try:
+                    Turn.validate_placement(test_turn, game_state)
+                    valid_turns.append(test_turn)
+                    descriptions.append(
+                        f"Place QueenBee at ({space.q},{space.r},{space.s})"
+                    )
+                except ValueError:
+                    pass
+        else:
+            available_spaces = game_state.get_available_spaces()
+
+            # --- Placements ---
+            seen_placements: set = set()
+            for piece_type in available_pieces:
+                for space in available_spaces:
+                    key = (piece_type, space.q, space.r, space.s)
+                    if key in seen_placements:
+                        continue
+                    test_turn = Turn(
+                        player=self.team, piece_type=piece_type,
+                        action_type='place', target_coordinates=space
+                    )
+                    try:
+                        Turn.validate_placement(test_turn, game_state)
+                        seen_placements.add(key)
+                        valid_turns.append(test_turn)
+                        descriptions.append(
+                            f"Place {piece_type.capitalize()} at ({space.q},{space.r},{space.s})"
+                        )
+                    except ValueError:
+                        pass
+
+            # --- Movements ---
+            for piece_type, piece_ids in movable_pieces.items():
+                for pid in piece_ids:
+                    if not MovementHelper.hive_stays_connected(pid, game_state):
+                        continue
+                    piece = game_state.all_pieces.get(pid)
+                    if piece is None or piece.hex_coordinates is None:
+                        continue
+                    from_coord = piece.hex_coordinates
+                    piece_name = piece.__class__.__name__
+                    for target in piece.get_valid_moves(game_state):
+                        turn = Turn(
+                            player=self.team, piece_id=pid,
+                            action_type='move', target_coordinates=target
+                        )
+                        valid_turns.append(turn)
+                        descriptions.append(
+                            f"Move {piece_name} from "
+                            f"({from_coord.q},{from_coord.r},{from_coord.s}) "
+                            f"to ({target.q},{target.r},{target.s})"
+                        )
+
+        if not valid_turns:
+            print(f"\n{self.team.capitalize()} has no valid moves. Forfeiting.")
+            return Turn(player=self.team, action_type='forfeit')
+
+        print(f"\n{'='*50}")
+        print(f"Your turn! ({self.team.upper()})")
+        print(f"{'='*50}")
+        print("Available moves:")
+        for i, desc in enumerate(descriptions, 1):
+            print(f"  {i:3d}. {desc}")
+        print()
+
+        while True:
+            try:
+                raw = input(
+                    f"Enter move number (1-{len(valid_turns)}), or 'q' to forfeit: "
+                ).strip()
+                if raw.lower() == 'q':
+                    return Turn(player=self.team, action_type='forfeit')
+                choice = int(raw)
+                if 1 <= choice <= len(valid_turns):
+                    print(f"  → {descriptions[choice - 1]}")
+                    return valid_turns[choice - 1]
+                print(f"  Please enter a number between 1 and {len(valid_turns)}")
+            except ValueError:
+                print("  Invalid input. Please enter a number.")
+            except (EOFError, KeyboardInterrupt):
+                print("\nGame interrupted.")
+                return Turn(player=self.team, action_type='forfeit')
