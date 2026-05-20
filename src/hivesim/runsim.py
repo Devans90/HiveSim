@@ -108,7 +108,7 @@ def simulate_game(white_bot, black_bot, verbose=False, plot_game: bool = False, 
     return None, max_turns, game
 
 
-white = RandomBot(team="white")
-black = RandomBot(team="black")
-
-_, max_turns, game = simulate_game(white, black, verbose=True, plot_game=True)
+if __name__ == "__main__":
+    white = RandomBot(team="white")
+    black = RandomBot(team="black")
+    _, max_turns, game = simulate_game(white, black, verbose=True, plot_game=True)

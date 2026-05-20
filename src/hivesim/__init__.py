@@ -30,6 +30,9 @@ from hivesim.game import (
 from hivesim.robots import BaseBot, RandomBot
 
 from hivesim.env import HiveEnv, make_hive_env
+from hivesim.elo import DEFAULT_K, DEFAULT_RATING, expected_score, update_ratings
+from hivesim.pool import BotEntry, BotPool
+from hivesim.tournament import MatchResult, TournamentResult, run_match, run_tournament
 
 __all__ = [
     # Core game classes
@@ -51,6 +54,19 @@ __all__ = [
     # Bots
     'BaseBot',
     'RandomBot',
+    # ELO
+    'DEFAULT_K',
+    'DEFAULT_RATING',
+    'expected_score',
+    'update_ratings',
+    # Bot pool
+    'BotEntry',
+    'BotPool',
+    # Tournaments
+    'MatchResult',
+    'TournamentResult',
+    'run_match',
+    'run_tournament',
     # RL Environment
     'HiveEnv',
     'make_hive_env',
