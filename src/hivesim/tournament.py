@@ -68,7 +68,7 @@ def run_match(
         elif winner is None:
             white_outcome = black_outcome = "draw"
         else:
-            raise ValueError("simulate_game returned invalid winner value")
+            raise ValueError(f"simulate_game returned invalid winner value: {winner!r}")
 
         pool.record_result(white_name, white_elo_after, white_outcome)
         pool.record_result(black_name, black_elo_after, black_outcome)

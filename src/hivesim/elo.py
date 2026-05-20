@@ -7,7 +7,7 @@ DEFAULT_RATING: float = 1200.0
 
 
 def expected_score(rating_a: float, rating_b: float) -> float:
-    """Return the expected score for player A against player B."""
+    """Return P(A beats B) as a probability in [0, 1]."""
     return 1.0 / (1.0 + 10.0 ** ((rating_b - rating_a) / 400.0))
 
 
@@ -17,7 +17,13 @@ def update_ratings(
     winner: str | None,
     k: float = DEFAULT_K,
 ) -> tuple[float, float]:
-    """Return updated ELO ratings for A and B based on the game result."""
+    """Return updated ELO ratings for white(A) and black(B).
+
+    `winner` must be one of:
+    - \"white\": white/A wins
+    - \"black\": black/B wins
+    - None: draw
+    """
     expected_a = expected_score(rating_a, rating_b)
     expected_b = expected_score(rating_b, rating_a)
 

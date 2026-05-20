@@ -85,7 +85,13 @@ class BotPool:
                 f"Class '{entry.class_name}' not found in module '{entry.module}'"
             ) from exc
 
-        bot = bot_class(team=team, name=entry.name)
+        try:
+            bot = bot_class(team=team, name=entry.name)
+        except TypeError as exc:
+            raise TypeError(
+                f"Failed to instantiate '{entry.class_name}' with signature "
+                f"(team=..., name=...): {exc}"
+            ) from exc
         if not isinstance(bot, BaseBot):
             raise TypeError(f"{entry.class_name} is not a BaseBot subclass")
 
