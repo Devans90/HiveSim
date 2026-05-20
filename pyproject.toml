@@ -5,6 +5,7 @@ description = "A Python simulation of the Hive board game with RL support"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "dash>=2.18.2",
     "gymnasium>=1.0.0",
     "nbformat>=5.10.4",
     "numpy>=1.21.0",
