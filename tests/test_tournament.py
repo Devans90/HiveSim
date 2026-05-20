@@ -24,6 +24,30 @@ def test_run_match_updates_elo_and_stats_with_real_game(tmp_path):
     assert black.games_played == 1
 
 
+def test_run_match_real_games_preserve_result_accounting(tmp_path):
+    pool = BotPool(pool_file=tmp_path / "pool.json")
+    pool.register("WhiteRandom", "hivesim.robots", "RandomBot")
+    pool.register("BlackRandom", "hivesim.robots", "RandomBot")
+
+    results = run_match(pool, "WhiteRandom", "BlackRandom", games=3, verbose=False)
+
+    assert len(results) == 3
+    for result in results:
+        assert result.winner in {"white", "black", None}
+        assert 0 < result.turns <= 200
+
+    white = pool.get("WhiteRandom")
+    black = pool.get("BlackRandom")
+    assert white.games_played == 3
+    assert black.games_played == 3
+
+    assert white.wins + white.losses + white.draws == 3
+    assert black.wins + black.losses + black.draws == 3
+    assert white.wins == black.losses
+    assert black.wins == white.losses
+    assert white.draws == black.draws
+
+
 def test_run_match_calls_save_after_each_game(tmp_path, monkeypatch):
     pool = BotPool(pool_file=tmp_path / "pool.json")
     pool.register("A", "hivesim.robots", "RandomBot")
