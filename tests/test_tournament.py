@@ -3,6 +3,8 @@ import pytest
 from hivesim.pool import BotPool
 from hivesim.tournament import run_match, run_tournament
 
+MAX_GAME_TURNS = 200
+
 
 def test_run_match_updates_elo_and_stats_with_real_game(tmp_path):
     pool = BotPool(pool_file=tmp_path / "pool.json")
@@ -34,7 +36,7 @@ def test_run_match_real_games_preserve_result_accounting(tmp_path):
     assert len(results) == 3
     for result in results:
         assert result.winner in {"white", "black", None}
-        assert 0 < result.turns <= 200
+        assert 0 < result.turns <= MAX_GAME_TURNS
 
     white = pool.get("WhiteRandom")
     black = pool.get("BlackRandom")
