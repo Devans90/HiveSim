@@ -4,6 +4,10 @@ A Python simulation of the Hive board game with hexagonal grid mechanics, suppor
 
 ![demo 1](/media/part1.gif)
 
+## Now with interactive mode!
+
+![demo 2](/media/interactivemode.gif)
+
 ## Overview
 
 HiveSim is a comprehensive implementation of Hive-like game mechanics using a hexagonal coordinate system. The project includes:
