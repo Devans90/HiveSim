@@ -184,35 +184,11 @@ def _available_pieces(gs: GameState, team: str) -> dict:
 
 def _movable_piece_ids(gs: GameState, team: str) -> set:
     player = gs.white_player if team == "white" else gs.black_player
-
-    # If the human has any elevated beetle (riding on top of another piece),
-    # only that beetle may be moved — placement and other moves are suppressed.
-    elevated_beetles = {
-        p.piece_id
-        for p in player.pieces
-        if (p.location == "board"
-            and p.z_level > 0
-            and p.__class__.__name__.lower() == "beetle")
-    }
-    if elevated_beetles:
-        return {pid for pid in elevated_beetles if _valid_move_targets(pid, gs)}
-
     return {
         p.piece_id
         for p in player.pieces
         if p.location == "board" and _valid_move_targets(p.piece_id, gs)
     }
-
-
-def _human_has_elevated_beetle(gs: GameState, team: str) -> bool:
-    """True when the human player has at least one beetle currently elevated."""
-    player = gs.white_player if team == "white" else gs.black_player
-    return any(
-        p.location == "board"
-        and p.z_level > 0
-        and p.__class__.__name__.lower() == "beetle"
-        for p in player.pieces
-    )
 
 
 def _must_place_queen(gs: GameState, team: str) -> bool:
@@ -620,28 +596,23 @@ def build_panel_buttons(state: AppState, panel_y_start: int,
     px = PANEL_X + 12
 
     if not state.winner and not state.ai_thinking and gs.current_team == state.human_color:
-        # When the human has an elevated beetle, suppress placement entirely —
-        # only the beetle can move until it descends.
-        beetle_elevated = _human_has_elevated_beetle(gs, state.human_color)
+        avail = _available_pieces(gs, state.human_color)
+        must_q = _must_place_queen(gs, state.human_color)
 
-        if not beetle_elevated:
-            avail = _available_pieces(gs, state.human_color)
-            must_q = _must_place_queen(gs, state.human_color)
-
-            for pt, cnt in sorted(avail.items()):
-                disabled = must_q and pt != "queenbee"
-                is_active = (state.action_mode == "place_target"
-                             and state.selected_piece_type == pt)
-                label = f"{pt.capitalize()}  x{cnt}"
-                buttons.append(Button(
-                    rect=pygame.Rect(px, y, btn_w, btn_h),
-                    label=label,
-                    icon=PIECE_EMOJIS.get(pt, ""),
-                    data=("place", pt),
-                    disabled=disabled,
-                    active=is_active,
-                ))
-                y += btn_h + 6
+        for pt, cnt in sorted(avail.items()):
+            disabled = must_q and pt != "queenbee"
+            is_active = (state.action_mode == "place_target"
+                         and state.selected_piece_type == pt)
+            label = f"{pt.capitalize()}  x{cnt}"
+            buttons.append(Button(
+                rect=pygame.Rect(px, y, btn_w, btn_h),
+                label=label,
+                icon=PIECE_EMOJIS.get(pt, ""),
+                data=("place", pt),
+                disabled=disabled,
+                active=is_active,
+            ))
+            y += btn_h + 6
 
     # Cancel button
     if state.action_mode != "idle":
@@ -703,27 +674,9 @@ def draw_panel(surface: pygame.Surface, state: AppState,
         surface.blit(warn, (PANEL_X + 12, y))
         y += warn.get_height() + 8
 
-    # Beetle-elevated notice
+    # Section heading: place piece
     if (not state.winner and not state.ai_thinking
-            and gs.current_team == state.human_color
-            and _human_has_elevated_beetle(gs, state.human_color)):
-        beetle_icon = PIECE_EMOJIS.get("beetle") if emoji_font else None
-        note_text = "Beetle riding \u2013 move it!"
-        note = font_sm.render(note_text, True, (120, 60, 0))
-        nx = PANEL_X + 12
-        if beetle_icon and emoji_font:
-            raw = emoji_font.render(beetle_icon, True, (0, 0, 0))
-            if raw.get_width() >= 32:
-                ico = pygame.transform.smoothscale(raw, (note.get_height(), note.get_height()))
-                surface.blit(ico, (nx, y))
-                nx += ico.get_width() + 4
-        surface.blit(note, (nx, y))
-        y += note.get_height() + 8
-
-    # Section heading: place piece (only when placement is available)
-    if (not state.winner and not state.ai_thinking
-            and gs.current_team == state.human_color
-            and not _human_has_elevated_beetle(gs, state.human_color)):
+            and gs.current_team == state.human_color):
         hdr = font_sm.render("Place a piece:", True, PANEL_TEXT)
         surface.blit(hdr, (PANEL_X + 12, y))
         y += hdr.get_height() + 6
@@ -748,11 +701,8 @@ def draw_panel(surface: pygame.Surface, state: AppState,
             hint = "AI is calculating…"
         elif gs.current_team == state.human_color:
             if state.action_mode == "idle":
-                if _human_has_elevated_beetle(gs, state.human_color):
-                    hint = "Click the beetle to move it."
-                else:
-                    hint = "Click a blue-bordered piece to move"
-                    hint2 = "or pick a type above to place."
+                hint = "Click a blue-bordered piece to move"
+                hint2 = "or pick a type above to place."
             elif state.action_mode == "move_target":
                 hint = "Click a green hex to move there."
             else:
