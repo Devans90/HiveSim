@@ -334,6 +334,37 @@ class TestPiecePlacement:
         validated = Turn.validate_placement(turn3, game.game_state)
         assert validated is not None
 
+    def test_placement_uses_top_piece_color_for_stacks(self):
+        """Placement color rule should use top piece color when adjacent to a stack."""
+        game = Game()
+        gs = game.game_state
+
+        origin = HexCoordinate(q=0, r=0, s=0)
+        target = HexCoordinate(q=1, r=-1, s=0)
+
+        # Build stack at origin: black piece on bottom, white beetle on top.
+        black_ant = gs.black_player.pieces[0]
+        white_beetle = next(p for p in gs.white_player.pieces if isinstance(p, Beetle))
+        gs.board_state.add_piece(black_ant.piece_id, black_ant, origin)
+        gs.board_state.add_piece(white_beetle.piece_id, white_beetle, origin)
+
+        # Ensure color-adjacency placement rule is active.
+        gs.turn = 2
+
+        white_ant_to_place = next(
+            p for p in gs.white_player.pieces
+            if isinstance(p, Ant) and p.location == 'offboard'
+        )
+        turn = Turn(
+            player='white',
+            piece_id=white_ant_to_place.piece_id,
+            action_type='place',
+            target_coordinates=target
+        )
+
+        validated = Turn.validate_placement(turn, gs)
+        assert validated is not None
+
 
 class TestQueenPlacementRule:
     """Test the rule that queen must be placed by turn 4."""

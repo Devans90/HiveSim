@@ -27,7 +27,7 @@ from hivesim.game import (
     MovementHelper,
 )
 
-from hivesim.robots import BaseBot, RandomBot
+from hivesim.robots import BaseBot, RandomBot, HumanPlayer
 
 from hivesim.env import HiveEnv, make_hive_env
 from hivesim.elo import DEFAULT_K, DEFAULT_RATING, expected_score, update_ratings
@@ -54,6 +54,7 @@ __all__ = [
     # Bots
     'BaseBot',
     'RandomBot',
+    'HumanPlayer',
     # ELO
     'DEFAULT_K',
     'DEFAULT_RATING',

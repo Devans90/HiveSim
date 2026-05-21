@@ -884,9 +884,8 @@ class Turn(BaseModel):
 
         # Check queen placement rule
         queen = game_state.get_queen(turn.player)
-        player_turn = game_state.turn // 2 if turn.player == 'white' else (game_state.turn - 1) // 2
-        if player_turn >= 4 and queen.location == 'offboard':
-            raise ValueError(f'{turn.player.capitalize()} must place Queen by turn 4')
+        if queen.location == 'offboard':
+            raise ValueError(f'{turn.player.capitalize()} must place Queen before moving any piece')
         
         # Delegate to piece's movement validation
         if not piece.can_move_to(turn.target_coordinates, game_state):
@@ -950,35 +949,27 @@ class Turn(BaseModel):
         if target in occupied:
             raise ValueError('Target coordinates are already occupied')
 
-        # check its not next to an opposite colour
+        # check adjacency color rule (using top piece at each neighboring stack)
         if game_state.turn > 1: # skip this check for the first placement
-            # get players
-            player = game_state.white_player if turn.player == 'white' else game_state.black_player
-            opponent = game_state.black_player if turn.player == 'white' else game_state.white_player
-            
-            # get ids
-            player_piece_ids = [piece.piece_id for piece in player.pieces if piece.location == 'board']
-            opponent_piece_ids = [piece.piece_id for piece in opponent.pieces if piece.location == 'board']
+            adjacent_top_pieces = [
+                game_state.board_state.get_top_piece_at(adj)
+                for adj in turn.target_coordinates.get_adjacent_hexes()
+            ]
 
-            # coordinates adjacent to player
-            player_adjacent = set()
-            for pid in player_piece_ids:
-                piece = game_state.board_state.pieces[pid]
-                for adj in piece.hex_coordinates.get_adjacent_hexes():
-                    player_adjacent.add((adj.q, adj.r, adj.s))
-            
-            # coordinates adjacent to opponent
-            opponent_adjacent = set()
-            for pid in opponent_piece_ids:
-                piece = game_state.board_state.pieces[pid]
-                for adj in piece.hex_coordinates.get_adjacent_hexes():
-                    opponent_adjacent.add((adj.q, adj.r, adj.s))
+            has_player_adjacent = any(
+                piece is not None and piece.team == turn.player
+                for piece in adjacent_top_pieces
+            )
+            has_opponent_adjacent = any(
+                piece is not None and piece.team != turn.player
+                for piece in adjacent_top_pieces
+            )
 
-            if target not in player_adjacent:
+            if not has_player_adjacent:
                 raise ValueError('Target coordinates must be adjacent to your own pieces')
-        
-            # Must NOT be adjacent to any opponent pieces
-            if target in opponent_adjacent:
+
+            # Must NOT be adjacent to any opponent top pieces
+            if has_opponent_adjacent:
                 raise ValueError('Target coordinates cannot be adjacent to opponent pieces')
 
         # check piece is offboard
@@ -1051,4 +1042,3 @@ class Game(BaseModel):
         self.game_state.turn += 1
         self.game_state.current_team = 'black' if self.game_state.current_team == 'white' else 'white'
         return turn.piece_id
-
