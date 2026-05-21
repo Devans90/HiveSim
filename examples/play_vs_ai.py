@@ -943,10 +943,18 @@ def run(state: AppState) -> None:
     font_md = pygame.font.SysFont("monospace", 18, bold=True)
     font_lg = pygame.font.SysFont("monospace", 28, bold=True)
 
-    # Emoji font – Noto Color Emoji is present on most Linux systems;
-    # the rendered surface is always large so we scale it down per hex.
+    # Emoji font lookup across common platforms.
+    # On Windows this should resolve to Segoe UI Emoji.
     emoji_font: Optional[pygame.font.Font] = None
-    for _fname in ("notocoloremoji", "seguiemoji", "applecoloremoji"):
+    for _fname in (
+        "Segoe UI Emoji",
+        "segoeuiemoji",
+        "Segoe UI Symbol",
+        "Noto Color Emoji",
+        "notocoloremoji",
+        "Apple Color Emoji",
+        "applecoloremoji",
+    ):
         try:
             candidate = pygame.font.SysFont(_fname, 64)
             test = candidate.render("🐜", True, (0, 0, 0))
