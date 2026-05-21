@@ -884,9 +884,8 @@ class Turn(BaseModel):
 
         # Check queen placement rule
         queen = game_state.get_queen(turn.player)
-        player_turn = game_state.turn // 2 if turn.player == 'white' else (game_state.turn - 1) // 2
-        if player_turn >= 4 and queen.location == 'offboard':
-            raise ValueError(f'{turn.player.capitalize()} must place Queen by turn 4')
+        if queen.location == 'offboard':
+            raise ValueError(f'{turn.player.capitalize()} must place Queen before moving any piece')
         
         # Delegate to piece's movement validation
         if not piece.can_move_to(turn.target_coordinates, game_state):

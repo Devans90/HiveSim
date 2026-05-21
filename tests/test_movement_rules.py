@@ -185,6 +185,42 @@ class TestMovementValidation:
         with pytest.raises(ValueError, match="Cannot move opponent piece"):
             Turn.validate_movement(turn, game_state)
 
+    def test_validate_movement_requires_queen_placed_white(self):
+        """Test white cannot move any piece before placing white queen."""
+        game_state = GameState()
+        ant1 = game_state.white_player.pieces[0]
+        ant2 = game_state.white_player.pieces[1]
+        game_state.board_state.add_piece(ant1.piece_id, ant1, HexCoordinate(q=0, r=0, s=0))
+        game_state.board_state.add_piece(ant2.piece_id, ant2, HexCoordinate(q=1, r=-1, s=0))
+
+        turn = Turn(
+            player='white',
+            piece_id=ant2.piece_id,
+            action_type='move',
+            target_coordinates=HexCoordinate(q=2, r=-1, s=-1)
+        )
+
+        with pytest.raises(ValueError, match="White must place Queen before moving any piece"):
+            Turn.validate_movement(turn, game_state)
+
+    def test_validate_movement_requires_queen_placed_black(self):
+        """Test black cannot move any piece before placing black queen."""
+        game_state = GameState()
+        ant1 = game_state.black_player.pieces[0]
+        ant2 = game_state.black_player.pieces[1]
+        game_state.board_state.add_piece(ant1.piece_id, ant1, HexCoordinate(q=0, r=0, s=0))
+        game_state.board_state.add_piece(ant2.piece_id, ant2, HexCoordinate(q=1, r=-1, s=0))
+
+        turn = Turn(
+            player='black',
+            piece_id=ant2.piece_id,
+            action_type='move',
+            target_coordinates=HexCoordinate(q=2, r=-1, s=-1)
+        )
+
+        with pytest.raises(ValueError, match="Black must place Queen before moving any piece"):
+            Turn.validate_movement(turn, game_state)
+
 
 class TestComplexBoardScenarios:
     """Test complex board scenarios and edge cases."""
